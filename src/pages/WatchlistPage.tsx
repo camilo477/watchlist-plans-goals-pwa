@@ -644,7 +644,6 @@ function ItemRow({
   setSelected,
   setStatus,
   removeItem,
-  updateProgress,
 }: {
   it: WatchItem;
   selected: { mediaType: TmdbMediaType; tmdbId: number } | null;

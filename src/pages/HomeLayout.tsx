@@ -7,7 +7,7 @@ const topLinkStyle = (active: boolean): React.CSSProperties => ({
   borderRadius: 999,
   textDecoration: "none",
   color: active ? "white" : "#cbd5e1",
-  background: active ? "rgba(51,65,85,.9)" : "transparent",
+  background: active ? "#0b1220;" : "transparent",
   border: active ? "1px solid rgba(148,163,184,.25)" : "1px solid transparent",
   whiteSpace: "nowrap",
 });
@@ -31,7 +31,6 @@ export default function HomeLayout() {
         margin: "0 auto",
         padding: 16,
 
-        // 🔧 para que nunca asome gris dentro del contenedor
         minHeight: "100vh",
         background: "#0b1220",
         color: "white",

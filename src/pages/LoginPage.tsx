@@ -28,7 +28,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
-  // Si ya está logueado, lo mandamos al destino (cuando auth termine de cargar)
   useEffect(() => {
     if (!authLoading && user) {
       nav(from, { replace: true });
@@ -59,7 +58,6 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, pass);
       nav(from, { replace: true });
     } catch (e: any) {
-      // firebase suele enviar códigos tipo auth/invalid-credential
       const code = e?.code as string | undefined;
 
       if (
@@ -104,27 +102,51 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        background: "#0b1220",
-        color: "white",
-        padding: 16,
-      }}
-    >
-      <div
-        style={{
-          width: 360,
-          maxWidth: "100%",
-          padding: 16,
-          borderRadius: 16,
-          border: "1px solid #1f2937",
-          background: "rgba(17, 24, 39, 0.25)",
-          boxSizing: "border-box",
-        }}
-      >
+    <div className="loginWrap">
+      <style>{`
+        html, body, #root { height: 100%; background: #0b1220; }
+        body { margin: 0; }
+
+        /* Evita el “descentrado” por la barra del navegador (móvil) */
+        .loginWrap{
+          min-height: 100vh;
+          min-height: 100svh; /* viewport estable (móvil) */
+          min-height: 100dvh; /* viewport real (móvil) */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #0b1220;
+          color: white;
+
+          /* safe-area (notch) */
+          padding-top: max(16px, env(safe-area-inset-top));
+          padding-right: max(16px, env(safe-area-inset-right));
+          padding-bottom: max(16px, env(safe-area-inset-bottom));
+          padding-left: max(16px, env(safe-area-inset-left));
+          box-sizing: border-box;
+        }
+
+        .loginCard{
+          width: min(360px, 100%);
+          padding: 16px;
+          border-radius: 16px;
+          border: 1px solid #1f2937;
+          background: rgba(17, 24, 39, 0.25);
+          box-sizing: border-box;
+        }
+
+        /* Cuando el teclado abre y queda poco alto, mejor alinear arriba */
+        @media (max-height: 520px){
+          .loginWrap{
+            align-items: flex-start;
+          }
+          .loginCard{
+            margin-top: 12px;
+          }
+        }
+      `}</style>
+
+      <div className="loginCard">
         <h2 style={{ marginTop: 0 }}>Iniciar sesión</h2>
         <p style={{ color: "#cbd5e1", marginTop: 6 }}>
           Usuario: <b>camilo</b> o <b>diana</b>
@@ -149,12 +171,6 @@ export default function LoginPage() {
             autoComplete="current-password"
             disabled={loading || authLoading}
           />
-
-          {/* Opcional debug:
-          <div style={{ color: "#94a3b8", fontSize: 12 }}>
-            Email: {USER_TO_EMAIL[normalizeUser(username)] || "—"}
-          </div>
-          */}
 
           <button disabled={loading || authLoading} style={btn} type="submit">
             {authLoading ? "Cargando…" : loading ? "Entrando…" : "Entrar"}

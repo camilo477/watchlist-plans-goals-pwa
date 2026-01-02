@@ -30,9 +30,28 @@ export default function HomeLayout() {
         maxWidth: 1500,
         margin: "0 auto",
         padding: 16,
+
+        // 🔧 para que nunca asome gris dentro del contenedor
+        minHeight: "100vh",
+        background: "#0b1220",
+        color: "white",
       }}
     >
       <style>{`
+        /* 🔧 Fondo global para evitar “gris” al hacer overscroll */
+        html, body {
+          height: 100%;
+          background: #0b1220;
+        }
+        body {
+          margin: 0;
+          overscroll-behavior-y: none; /* evita el rebote que deja ver el fondo del navegador */
+        }
+        #root {
+          min-height: 100%;
+          background: #0b1220;
+        }
+
         .topbar{
           position: sticky;
           top: 0;

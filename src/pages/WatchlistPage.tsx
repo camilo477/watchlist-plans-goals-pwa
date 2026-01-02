@@ -243,89 +243,102 @@ export default function WatchlistPage() {
     <div className="wlPage">
       {/* CSS responsive local */}
       <style>{`
-        .wlPage{
-          max-width: 1500px;
-          margin: 0 auto;
-          padding: 18px;
-          display: grid;
-          gap: 14px;
-        }
+  .wlPage{
+    width: 100%;
+    margin: 0 auto;
+    padding: 18px;
+    display: grid;
+    gap: 14px;
+  }
 
-        /* DESKTOP: 3 columnas + panel derecho */
-        .wlGrid{
-          display: grid;
-          gap: 14px;
-          align-items: start;
-          grid-template-columns:
-            minmax(340px, 1fr)
-            minmax(340px, 1fr)
-            minmax(340px, 1fr)
-            minmax(460px, 1.2fr);
-          grid-template-areas:
-            "pending watching done right";
-        }
+  /* DESKTOP: 3 columnas + sidebar fijo */
+  .wlGrid{
+    display: grid;
+    gap: 14px;
+    align-items: start;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 420px;
+    grid-template-areas: "pending watching done right";
+  }
 
-        .area-pending{ grid-area: pending; }
-        .area-watching{ grid-area: watching; }
-        .area-done{ grid-area: done; }
-        .area-right{ grid-area: right; }
+  .area-pending{ grid-area: pending; }
+  .area-watching{ grid-area: watching; }
+  .area-done{ grid-area: done; }
+  .area-right{ grid-area: right; }
 
-        .rightStack{
-          display: grid;
-          gap: 14px;
-          grid-template-rows: minmax(240px, 40vh) minmax(240px, 34vh);
-        }
+  /* Sidebar: NO lo estires a 40vh si está vacío */
+  .rightStack{
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    align-self: start;
+    position: sticky;
+    top: 92px; /* debajo del topbar */
+  }
 
-        /* scroll agradable en desktop */
-        .wlCardScroll{
-          max-height: 74vh;
-          overflow: auto;
-        }
+  /* Cada card del sidebar solo crece si necesita */
+  .wlRightCard{
+    overflow: auto;
+    max-height: calc(50dvh - 70px);
+  }
 
-        /* en el panel derecho, cada card controla su altura */
-        .wlRightCard{
-          overflow: auto;
-        }
+  /* scroll agradable en desktop para listas */
+  .wlCardScroll{
+    max-height: calc(100dvh - 250px);
+    overflow: auto;
+  }
 
-        /* TABLET: 2 columnas y panel derecho abajo */
-        @media (max-width: 1200px){
-          .wlGrid{
-            grid-template-columns: 1fr 1fr;
-            grid-template-areas:
-              "pending watching"
-              "done done"
-              "right right";
-          }
-          .rightStack{ grid-template-rows: auto auto; }
-          .wlCardScroll{ max-height: 60vh; }
-        }
+  /* TABLET: 2 columnas y sidebar abajo */
+  @media (max-width: 1200px){
+    .wlGrid{
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "pending watching"
+        "done done"
+        "right right";
+    }
 
-        /* CELULAR */
-        @media (max-width: 650px){
-          .wlPage{ padding: 12px; }
-          .wlGrid{
-            grid-template-columns: 1fr;
-            grid-template-areas:
-              "right"
-              "pending"
-              "watching"
-              "done";
-          }
-          .rightStack{ grid-template-rows: auto auto; }
-          .wlCardScroll{ max-height: none; overflow: visible; }
-          .wlResultRow{ grid-template-columns: 1fr; }
-          .wlAddBtn{ width: 100%; }
-          .wlActions{ flex-wrap: wrap; }
-        }
+    .rightStack{
+      position: static;
+    }
 
-        .wlWrapAnywhere{ overflow-wrap:anywhere; word-break:break-word; }
-        .wlTitleClamp{
-          display:-webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow:hidden;
-        }
-      `}</style>
+    .wlRightCard{
+      max-height: none;
+    }
+
+    .wlCardScroll{
+      max-height: 60vh;
+    }
+  }
+
+  /* CELULAR */
+  @media (max-width: 650px){
+    .wlPage{ padding: 12px; }
+    .wlGrid{
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "right"
+        "pending"
+        "watching"
+        "done";
+    }
+
+    .rightStack{ position: static; }
+    .wlRightCard{ max-height: none; }
+
+    .wlCardScroll{ max-height: none; overflow: visible; }
+    .wlResultRow{ grid-template-columns: 1fr; }
+    .wlAddBtn{ width: 100%; }
+    .wlActions{ flex-wrap: wrap; }
+  }
+
+  .wlWrapAnywhere{ overflow-wrap:anywhere; word-break:break-word; }
+  .wlTitleClamp{
+    display:-webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow:hidden;
+  }
+`}</style>
 
       <div>
         <h2 style={{ margin: 0 }}>Watchlist</h2>

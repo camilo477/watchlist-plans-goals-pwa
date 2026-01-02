@@ -244,74 +244,78 @@ export default function WatchlistPage() {
       {/* CSS responsive local */}
       <style>{`
   .wlPage{
-    max-width: 1500px; /* antes 1200 */
+    max-width: 1500px;
     margin: 0 auto;
     padding: 18px;
     display: grid;
     gap: 14px;
   }
 
-  /* Desktop: columnas con mínimo, no “micro” */
+  /* DESKTOP: 3 columnas + panel derecho */
   .wlGrid{
     display: grid;
     gap: 14px;
     align-items: start;
-
-    /* 3 columnas de listas + 2 grandes (search/detalles) */
     grid-template-columns:
-      minmax(290px, 0.9fr)
-      minmax(290px, 0.9fr)
-      minmax(290px, 0.9fr)
-      minmax(340px, 1.1fr)
-      minmax(360px, 1.2fr);
-
+      minmax(320px, 1fr)
+      minmax(320px, 1fr)
+      minmax(320px, 1fr)
+      minmax(420px, 1.2fr);
     grid-template-areas:
-      "pending watching done search details";
+      "pending watching done right";
   }
 
   .area-pending{ grid-area: pending; }
   .area-watching{ grid-area: watching; }
   .area-done{ grid-area: done; }
-  .area-search{ grid-area: search; }
-  .area-details{ grid-area: details; }
+  .area-right{ grid-area: right; }
 
-  /* Cards scroll desktop */
+  /* Panel derecho: buscar arriba + detalles abajo */
+  .rightStack{
+    display: grid;
+    gap: 14px;
+    grid-template-rows: minmax(220px, 38vh) minmax(220px, 36vh);
+  }
+
+  /* Scroll solo en desktop/tablet */
   .wlCardScroll{
     max-height: 74vh;
     overflow: auto;
   }
 
-  /* Tipografía/padding un poco más grande en PC */
-  @media (min-width: 1100px){
-    .wlPage{ padding: 20px; }
-    .wlCardScroll{
-      padding: 14px; /* override visual (si quieres) */
-    }
+  /* en el panel derecho, cada uno controla su propia altura */
+  .wlRightCard{
+    overflow: auto;
   }
 
-  /* Tablet */
-  @media (max-width: 1050px){
+  /* TABLET: 2 columnas, panel derecho abajo full */
+  @media (max-width: 1200px){
     .wlGrid{
       grid-template-columns: 1fr 1fr;
       grid-template-areas:
-        "search details"
         "pending watching"
-        "done done";
+        "done done"
+        "right right";
+    }
+    .rightStack{
+      grid-template-rows: auto auto;
     }
     .wlCardScroll{ max-height: 60vh; }
   }
 
-  /* Celular */
+  /* CELULAR */
   @media (max-width: 650px){
     .wlPage{ padding: 12px; }
     .wlGrid{
       grid-template-columns: 1fr;
       grid-template-areas:
-        "search"
+        "right"
         "pending"
         "watching"
-        "done"
-        "details";
+        "done";
+    }
+    .rightStack{
+      grid-template-rows: auto auto;
     }
     .wlCardScroll{
       max-height: none;

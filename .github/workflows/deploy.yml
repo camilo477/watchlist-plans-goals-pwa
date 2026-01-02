@@ -19,42 +19,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ✅ SIN cache (evita el error de lockfile/rutas)
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Detect app directory
-        run: |
-          if [ -f package-lock.json ] || [ -f yarn.lock ]; then
-            echo "APP_DIR=." >> $GITHUB_ENV
-            echo "DIST_DIR=dist" >> $GITHUB_ENV
-          elif [ -d app-diamilo ] && ( [ -f app-diamilo/package-lock.json ] || [ -f app-diamilo/yarn.lock ] ); then
-            echo "APP_DIR=app-diamilo" >> $GITHUB_ENV
-            echo "DIST_DIR=app-diamilo/dist" >> $GITHUB_ENV
-          else
-            echo "No encontré package-lock.json/yarn.lock ni en root ni en app-diamilo"
-            ls -la
-            exit 1
-          fi
-
       - name: Create .env from secret
         run: |
-          printf '%s' "${{ secrets.ENV_FILE }}" > "${{ env.APP_DIR }}/.env"
+          printf '%s' "${{ secrets.ENV_FILE }}" > app-diamilo/.env
 
-      - name: Install
-        run: |
-          cd "${{ env.APP_DIR }}"
-          npm ci
+      - name: Install dependencies
+        working-directory: app-diamilo
+        run: npm install
 
       - name: Build
-        run: |
-          cd "${{ env.APP_DIR }}"
-          npm run build
+        working-directory: app-diamilo
+        run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ env.DIST_DIR }}
+          path: app-diamilo/dist
 
   deploy:
     needs: build

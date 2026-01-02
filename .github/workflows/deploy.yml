@@ -21,13 +21,18 @@ jobs:
         working-directory: app-diamilo
 
     steps:
-      - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: app-diamilo/package-lock.json
+
+      - name: Create .env from secret
+        run: |
+          printf '%s' "${{ secrets.ENV_FILE }}" > .env
+
+      - run: npm ci
+      - run: npm run build
+
 
       - name: Create .env from secret
         run: |

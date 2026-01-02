@@ -19,32 +19,61 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Show repo tree (debug)
+        run: |
+          echo "PWD=$PWD"
+          ls -la
+          find . -maxdepth 2 -type f -name package.json -print
+          find . -maxdepth 3 -type f -name package-lock.json -print
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      - name: Detect app directory
+        run: |
+          if [ -f package.json ]; then
+            echo "APP_DIR=." >> $GITHUB_ENV
+            echo "DIST_DIR=dist" >> $GITHUB_ENV
+          elif [ -d app-diamilo ] && [ -f app-diamilo/package.json ]; then
+            echo "APP_DIR=app-diamilo" >> $GITHUB_ENV
+            echo "DIST_DIR=app-diamilo/dist" >> $GITHUB_ENV
+          else
+            # Busca la primera carpeta que tenga package.json
+            APP=$(find . -maxdepth 2 -type f -name package.json | head -n 1 | sed 's|/package.json||' | sed 's|^\./||')
+            if [ -z "$APP" ]; then
+              echo "No encontré package.json"
+              exit 1
+            fi
+            echo "APP_DIR=$APP" >> $GITHUB_ENV
+            echo "DIST_DIR=$APP/dist" >> $GITHUB_ENV
+          fi
+          echo "Using APP_DIR=${APP_DIR}"
+
       - name: Create .env from secret
         run: |
-          printf '%s' "${{ secrets.ENV_FILE }}" > app-diamilo/.env
+          mkdir -p "${{ env.APP_DIR }}"
+          printf '%s' "${{ secrets.ENV_FILE }}" > "${{ env.APP_DIR }}/.env"
 
-      - name: Install dependencies
-        working-directory: app-diamilo
-        run: npm install
+      - name: Install
+        run: |
+          cd "${{ env.APP_DIR }}"
+          npm install
 
       - name: Build
-        working-directory: app-diamilo
-        run: npm run build
+        run: |
+          cd "${{ env.APP_DIR }}"
+          npm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: app-diamilo/dist
+          path: ${{ env.DIST_DIR }}
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4

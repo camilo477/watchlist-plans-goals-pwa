@@ -244,20 +244,21 @@ export default function WatchlistPage() {
       {/* CSS responsive local */}
       <style>{`
   .wlPage{
-    width: 100%;
+    max-width: 1500px;
     margin: 0 auto;
     padding: 18px;
     display: grid;
     gap: 14px;
   }
 
-  /* DESKTOP: 3 columnas + sidebar fijo */
+  /* ✅ PC: 4 columnas */
   .wlGrid{
     display: grid;
     gap: 14px;
     align-items: start;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) 420px;
-    grid-template-areas: "pending watching done right";
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 460px;
+    grid-template-areas:
+      "pending watching done right";
   }
 
   .area-pending{ grid-area: pending; }
@@ -265,29 +266,35 @@ export default function WatchlistPage() {
   .area-done{ grid-area: done; }
   .area-right{ grid-area: right; }
 
-  /* Sidebar: NO lo estires a 40vh si está vacío */
+  /* ✅ Panel derecho sin “cajas gigantes vacías” */
   .rightStack{
     display: grid;
     gap: 14px;
     align-content: start;
-    align-self: start;
     position: sticky;
-    top: 92px; /* debajo del topbar */
+    top: 110px; /* ajusta si quieres (depende del alto del topbar) */
   }
 
-  /* Cada card del sidebar solo crece si necesita */
+  /* cada card del panel derecho scroll si se llena */
   .wlRightCard{
     overflow: auto;
-    max-height: calc(50dvh - 70px);
   }
 
-  /* scroll agradable en desktop para listas */
+  /* límites cómodos por sección (sin obligar a ocupar 40vh vacíos) */
+  .rightStack > section:first-child{
+    max-height: 56dvh; /* Buscar */
+  }
+  .rightStack > section:last-child{
+    max-height: 38dvh; /* Detalles */
+  }
+
+  /* ✅ Scroll agradable para listas en PC */
   .wlCardScroll{
-    max-height: calc(100dvh - 250px);
+    max-height: calc(100dvh - 240px);
     overflow: auto;
   }
 
-  /* TABLET: 2 columnas y sidebar abajo */
+  /* TABLET: 2 columnas y panel derecho abajo */
   @media (max-width: 1200px){
     .wlGrid{
       grid-template-columns: 1fr 1fr;
@@ -296,21 +303,12 @@ export default function WatchlistPage() {
         "done done"
         "right right";
     }
-
-    .rightStack{
-      position: static;
-    }
-
-    .wlRightCard{
-      max-height: none;
-    }
-
-    .wlCardScroll{
-      max-height: 60vh;
-    }
+    .rightStack{ position: static; }
+    .wlRightCard{ max-height: none; }
+    .wlCardScroll{ max-height: 60vh; }
   }
 
-  /* CELULAR */
+  /* ✅ CEL: como lo tenías (right arriba y luego listas) */
   @media (max-width: 650px){
     .wlPage{ padding: 12px; }
     .wlGrid{
@@ -321,10 +319,8 @@ export default function WatchlistPage() {
         "watching"
         "done";
     }
-
     .rightStack{ position: static; }
     .wlRightCard{ max-height: none; }
-
     .wlCardScroll{ max-height: none; overflow: visible; }
     .wlResultRow{ grid-template-columns: 1fr; }
     .wlAddBtn{ width: 100%; }

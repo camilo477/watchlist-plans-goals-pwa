@@ -24,7 +24,14 @@ export default function HomeLayout() {
   const is = (p: string) => pathname.startsWith(p);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0b1220", color: "white" }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 1500,
+        margin: "0 auto",
+        padding: 16,
+      }}
+    >
       <style>{`
         .topbar{
           position: sticky;

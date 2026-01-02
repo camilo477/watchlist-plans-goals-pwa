@@ -243,97 +243,89 @@ export default function WatchlistPage() {
     <div className="wlPage">
       {/* CSS responsive local */}
       <style>{`
-  .wlPage{
-    max-width: 1500px;
-    margin: 0 auto;
-    padding: 18px;
-    display: grid;
-    gap: 14px;
-  }
+        .wlPage{
+          max-width: 1500px;
+          margin: 0 auto;
+          padding: 18px;
+          display: grid;
+          gap: 14px;
+        }
 
-  /* DESKTOP: 3 columnas + panel derecho */
-  .wlGrid{
-    display: grid;
-    gap: 14px;
-    align-items: start;
-    grid-template-columns:
-      minmax(320px, 1fr)
-      minmax(320px, 1fr)
-      minmax(320px, 1fr)
-      minmax(420px, 1.2fr);
-    grid-template-areas:
-      "pending watching done right";
-  }
+        /* DESKTOP: 3 columnas + panel derecho */
+        .wlGrid{
+          display: grid;
+          gap: 14px;
+          align-items: start;
+          grid-template-columns:
+            minmax(340px, 1fr)
+            minmax(340px, 1fr)
+            minmax(340px, 1fr)
+            minmax(460px, 1.2fr);
+          grid-template-areas:
+            "pending watching done right";
+        }
 
-  .area-pending{ grid-area: pending; }
-  .area-watching{ grid-area: watching; }
-  .area-done{ grid-area: done; }
-  .area-right{ grid-area: right; }
+        .area-pending{ grid-area: pending; }
+        .area-watching{ grid-area: watching; }
+        .area-done{ grid-area: done; }
+        .area-right{ grid-area: right; }
 
-  /* Panel derecho: buscar arriba + detalles abajo */
-  .rightStack{
-    display: grid;
-    gap: 14px;
-    grid-template-rows: minmax(220px, 38vh) minmax(220px, 36vh);
-  }
+        .rightStack{
+          display: grid;
+          gap: 14px;
+          grid-template-rows: minmax(240px, 40vh) minmax(240px, 34vh);
+        }
 
-  /* Scroll solo en desktop/tablet */
-  .wlCardScroll{
-    max-height: 74vh;
-    overflow: auto;
-  }
+        /* scroll agradable en desktop */
+        .wlCardScroll{
+          max-height: 74vh;
+          overflow: auto;
+        }
 
-  /* en el panel derecho, cada uno controla su propia altura */
-  .wlRightCard{
-    overflow: auto;
-  }
+        /* en el panel derecho, cada card controla su altura */
+        .wlRightCard{
+          overflow: auto;
+        }
 
-  /* TABLET: 2 columnas, panel derecho abajo full */
-  @media (max-width: 1200px){
-    .wlGrid{
-      grid-template-columns: 1fr 1fr;
-      grid-template-areas:
-        "pending watching"
-        "done done"
-        "right right";
-    }
-    .rightStack{
-      grid-template-rows: auto auto;
-    }
-    .wlCardScroll{ max-height: 60vh; }
-  }
+        /* TABLET: 2 columnas y panel derecho abajo */
+        @media (max-width: 1200px){
+          .wlGrid{
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas:
+              "pending watching"
+              "done done"
+              "right right";
+          }
+          .rightStack{ grid-template-rows: auto auto; }
+          .wlCardScroll{ max-height: 60vh; }
+        }
 
-  /* CELULAR */
-  @media (max-width: 650px){
-    .wlPage{ padding: 12px; }
-    .wlGrid{
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "right"
-        "pending"
-        "watching"
-        "done";
-    }
-    .rightStack{
-      grid-template-rows: auto auto;
-    }
-    .wlCardScroll{
-      max-height: none;
-      overflow: visible;
-    }
-    .wlResultRow{ grid-template-columns: 1fr; }
-    .wlAddBtn{ width: 100%; }
-    .wlActions{ flex-wrap: wrap; }
-  }
+        /* CELULAR */
+        @media (max-width: 650px){
+          .wlPage{ padding: 12px; }
+          .wlGrid{
+            grid-template-columns: 1fr;
+            grid-template-areas:
+              "right"
+              "pending"
+              "watching"
+              "done";
+          }
+          .rightStack{ grid-template-rows: auto auto; }
+          .wlCardScroll{ max-height: none; overflow: visible; }
+          .wlResultRow{ grid-template-columns: 1fr; }
+          .wlAddBtn{ width: 100%; }
+          .wlActions{ flex-wrap: wrap; }
+        }
 
-  .wlWrapAnywhere{ overflow-wrap:anywhere; word-break:break-word; }
-  .wlTitleClamp{
-    display:-webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow:hidden;
-  }
-`}</style>
+        .wlWrapAnywhere{ overflow-wrap:anywhere; word-break:break-word; }
+        .wlTitleClamp{
+          display:-webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow:hidden;
+        }
+      `}</style>
 
       <div>
         <h2 style={{ margin: 0 }}>Watchlist</h2>
@@ -349,6 +341,7 @@ export default function WatchlistPage() {
               {pending.length}
             </span>
           </header>
+
           {pending.length === 0 ? (
             <div style={emptyBox}>No hay pendientes.</div>
           ) : (
@@ -368,6 +361,7 @@ export default function WatchlistPage() {
           )}
         </section>
 
+        {/* 2) Viendo */}
         <section className="area-watching wlCardScroll" style={card}>
           <header style={cardHeader}>
             <strong>Viendo</strong>
@@ -375,6 +369,7 @@ export default function WatchlistPage() {
               {watching.length}
             </span>
           </header>
+
           {watching.length === 0 ? (
             <div style={emptyBox}>Nada en “viendo”.</div>
           ) : (
@@ -394,6 +389,7 @@ export default function WatchlistPage() {
           )}
         </section>
 
+        {/* 3) Vistas */}
         <section className="area-done wlCardScroll" style={card}>
           <header style={cardHeader}>
             <strong>Vistas</strong>
@@ -401,6 +397,7 @@ export default function WatchlistPage() {
               {done.length}
             </span>
           </header>
+
           {done.length === 0 ? (
             <div style={emptyBox}>Aún no hay vistas.</div>
           ) : (
@@ -420,223 +417,232 @@ export default function WatchlistPage() {
           )}
         </section>
 
-        {/* 2) Buscar */}
-        <section className="area-search wlCardScroll" style={card}>
-          <header style={cardHeader}>
-            <strong>Buscar Pelicula o Serie</strong>
-            <span style={{ color: "#94a3b8", fontSize: 12 }}>TMDB</span>
-          </header>
+        {/* Panel derecho */}
+        <div className="area-right rightStack">
+          {/* Buscar */}
+          <section className="wlRightCard" style={card}>
+            <header style={cardHeader}>
+              <strong>Buscar Película o Serie</strong>
+              <span style={{ color: "#94a3b8", fontSize: 12 }}>TMDB</span>
+            </header>
 
-          <form onSubmit={onSearch} style={{ display: "grid", gap: 10 }}>
-            <input
-              value={qText}
-              onChange={(e) => setQText(e.target.value)}
-              placeholder="Buscar"
-              style={input}
-            />
-            <button
-              type="submit"
-              style={primaryBtn}
-              disabled={!qText.trim() || searchLoading}
-            >
-              {searchLoading ? "Buscando…" : "Buscar"}
-            </button>
-          </form>
+            <form onSubmit={onSearch} style={{ display: "grid", gap: 10 }}>
+              <input
+                value={qText}
+                onChange={(e) => setQText(e.target.value)}
+                placeholder="Buscar"
+                style={input}
+              />
+              <button
+                type="submit"
+                style={primaryBtn}
+                disabled={!qText.trim() || searchLoading}
+              >
+                {searchLoading ? "Buscando…" : "Buscar"}
+              </button>
+            </form>
 
-          {searchError ? <div style={errorBox}>{searchError}</div> : null}
+            {searchError ? <div style={errorBox}>{searchError}</div> : null}
 
-          <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
-            {results.map((r) => {
-              const mediaType = r.media_type as TmdbMediaType;
-              const key = `${mediaType}:${r.id}`;
-              const already = existingIds.has(key);
-              const posterUrl = img(r.poster_path);
+            <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
+              {results.map((r) => {
+                const mediaType = r.media_type as TmdbMediaType;
+                const key = `${mediaType}:${r.id}`;
+                const already = existingIds.has(key);
+                const posterUrl = img(r.poster_path);
 
-              return (
-                <div key={key} className="wlResultRow" style={resultRow}>
-                  <button
-                    onClick={() => setSelected({ mediaType, tmdbId: r.id })}
-                    style={resultBtn}
-                  >
-                    {posterUrl ? (
-                      <img
-                        src={posterUrl}
-                        alt=""
-                        style={{
-                          width: 44,
-                          height: 66,
-                          borderRadius: 8,
-                          objectFit: "cover",
-                          background: "rgba(148,163,184,.08)",
-                          flex: "0 0 auto",
-                        }}
-                        onError={(e) => e.currentTarget.removeAttribute("src")}
-                      />
-                    ) : (
+                return (
+                  <div key={key} className="wlResultRow" style={resultRow}>
+                    <button
+                      onClick={() => setSelected({ mediaType, tmdbId: r.id })}
+                      style={resultBtn}
+                    >
+                      {posterUrl ? (
+                        <img
+                          src={posterUrl}
+                          alt=""
+                          style={{
+                            width: 44,
+                            height: 66,
+                            borderRadius: 8,
+                            objectFit: "cover",
+                            background: "rgba(148,163,184,.08)",
+                            flex: "0 0 auto",
+                          }}
+                          onError={(e) =>
+                            e.currentTarget.removeAttribute("src")
+                          }
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 44,
+                            height: 66,
+                            borderRadius: 8,
+                            background: "rgba(148,163,184,.08)",
+                            flex: "0 0 auto",
+                          }}
+                        />
+                      )}
+
                       <div
                         style={{
-                          width: 44,
-                          height: 66,
-                          borderRadius: 8,
-                          background: "rgba(148,163,184,.08)",
-                          flex: "0 0 auto",
+                          display: "grid",
+                          gap: 4,
+                          textAlign: "left",
+                          minWidth: 0,
                         }}
-                      />
-                    )}
+                      >
+                        <span
+                          className="wlTitleClamp"
+                          style={{ fontWeight: 600 }}
+                        >
+                          {titleOf(r)}
+                        </span>
+                        <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                          {(mediaType === "movie" ? "Película" : "Serie") +
+                            (yearOf(r) ? ` • ${yearOf(r)}` : "")}
+                        </span>
+                      </div>
+                    </button>
 
+                    <button
+                      className="wlAddBtn"
+                      onClick={() => (already ? null : addToPending(r))}
+                      disabled={already}
+                      style={already ? disabledBtn : addBtn}
+                      title={
+                        already
+                          ? "Ya está en pendientes"
+                          : "Agregar a pendientes"
+                      }
+                    >
+                      {already ? "Agregada" : "Agregar"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Detalles */}
+          <section className="wlRightCard" style={card}>
+            <header style={cardHeader}>
+              <strong>Detalles</strong>
+              <span style={{ color: "#94a3b8", fontSize: 12 }}></span>
+            </header>
+
+            {!selected ? (
+              <div style={emptyBox}>
+                Haz click en un pendiente o en un resultado para ver detalles.
+              </div>
+            ) : detailsLoading ? (
+              <div style={emptyBox}>Cargando detalles…</div>
+            ) : detailsError ? (
+              <div style={errorBox}>{detailsError}</div>
+            ) : details ? (
+              <div style={{ display: "grid", gap: 12, minWidth: 0 }}>
+                <div style={{ display: "flex", gap: 12, minWidth: 0 }}>
+                  {img(details.poster_path) ? (
+                    <img
+                      src={img(details.poster_path) ?? undefined}
+                      alt=""
+                      style={{
+                        width: 92,
+                        height: 138,
+                        borderRadius: 12,
+                        objectFit: "cover",
+                        background: "rgba(148,163,184,.08)",
+                        flex: "0 0 auto",
+                      }}
+                      onError={(e) => e.currentTarget.removeAttribute("src")}
+                    />
+                  ) : (
                     <div
                       style={{
-                        display: "grid",
-                        gap: 4,
-                        textAlign: "left",
-                        minWidth: 0,
+                        width: 92,
+                        height: 138,
+                        borderRadius: 12,
+                        background: "rgba(148,163,184,.08)",
+                        flex: "0 0 auto",
                       }}
-                    >
-                      <span
-                        className="wlTitleClamp"
-                        style={{ fontWeight: 600 }}
-                      >
-                        {titleOf(r)}
-                      </span>
-                      <span style={{ fontSize: 12, color: "#94a3b8" }}>
-                        {(mediaType === "movie" ? "Película" : "Serie") +
-                          (yearOf(r) ? ` • ${yearOf(r)}` : "")}
-                      </span>
+                    />
+                  )}
+
+                  <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+                    <h3 className="wlWrapAnywhere" style={{ margin: 0 }}>
+                      {titleOf(details)}
+                    </h3>
+                    <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                      {details.release_date?.slice(0, 4) ||
+                        details.first_air_date?.slice(0, 4) ||
+                        ""}
+                      {details.vote_average
+                        ? ` • ⭐ ${details.vote_average.toFixed(1)}`
+                        : ""}
                     </div>
-                  </button>
 
-                  <button
-                    className="wlAddBtn"
-                    onClick={() => (already ? null : addToPending(r))}
-                    disabled={already}
-                    style={already ? disabledBtn : addBtn}
-                    title={
-                      already ? "Ya está en pendientes" : "Agregar a pendientes"
-                    }
-                  >
-                    {already ? "Agregada" : "Agregar"}
-                  </button>
+                    {details.genres?.length ? (
+                      <div
+                        style={{ display: "flex", gap: 6, flexWrap: "wrap" }}
+                      >
+                        {details.genres.slice(0, 4).map((g) => (
+                          <span key={g.id} style={chip}>
+                            {g.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-        </section>
 
-        {/* 3) Detalles */}
-        <section className="area-details wlCardScroll" style={card}>
-          <header style={cardHeader}>
-            <strong>Detalles</strong>
-            <span style={{ color: "#94a3b8", fontSize: 12 }}></span>
-          </header>
+                {/* Info de quién lo agregó (si lo encontramos en items) */}
+                {(() => {
+                  const current = items.find(
+                    (x) =>
+                      x.tmdbId === selected.tmdbId &&
+                      x.mediaType === selected.mediaType
+                  );
+                  if (!current?.createdByName && !current?.createdByEmail)
+                    return null;
+                  return (
+                    <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                      Agregado por:{" "}
+                      {current.createdByName ||
+                        (current.createdByEmail
+                          ? current.createdByEmail.split("@")[0]
+                          : "")}
+                    </div>
+                  );
+                })()}
 
-          {!selected ? (
-            <div style={emptyBox}>
-              Haz click en un pendiente o en un resultado para ver detalles.
-            </div>
-          ) : detailsLoading ? (
-            <div style={emptyBox}>Cargando detalles…</div>
-          ) : detailsError ? (
-            <div style={errorBox}>{detailsError}</div>
-          ) : details ? (
-            <div style={{ display: "grid", gap: 12, minWidth: 0 }}>
-              <div style={{ display: "flex", gap: 12, minWidth: 0 }}>
-                {img(details.poster_path) ? (
-                  <img
-                    src={img(details.poster_path) ?? undefined}
-                    alt=""
-                    style={{
-                      width: 92,
-                      height: 138,
-                      borderRadius: 12,
-                      objectFit: "cover",
-                      background: "rgba(148,163,184,.08)",
-                      flex: "0 0 auto",
-                    }}
-                    onError={(e) => e.currentTarget.removeAttribute("src")}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 92,
-                      height: 138,
-                      borderRadius: 12,
-                      background: "rgba(148,163,184,.08)",
-                      flex: "0 0 auto",
-                    }}
-                  />
-                )}
-
-                <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
-                  <h3 className="wlWrapAnywhere" style={{ margin: 0 }}>
-                    {titleOf(details)}
-                  </h3>
-                  <div style={{ color: "#94a3b8", fontSize: 12 }}>
-                    {details.release_date?.slice(0, 4) ||
-                      details.first_air_date?.slice(0, 4) ||
-                      ""}
-                    {details.vote_average
-                      ? ` • ⭐ ${details.vote_average.toFixed(1)}`
+                {selected.mediaType === "tv" ? (
+                  <div style={{ color: "#cbd5e1", fontSize: 13 }}>
+                    {details.number_of_seasons
+                      ? `Temporadas: ${details.number_of_seasons}`
+                      : ""}
+                    {details.number_of_episodes
+                      ? ` • Episodios: ${details.number_of_episodes}`
                       : ""}
                   </div>
-
-                  {details.genres?.length ? (
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {details.genres.slice(0, 4).map((g) => (
-                        <span key={g.id} style={chip}>
-                          {g.name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              {/* Info de quién lo agregó (si lo encontramos en items) */}
-              {(() => {
-                const current = items.find(
-                  (x) =>
-                    x.tmdbId === selected.tmdbId &&
-                    x.mediaType === selected.mediaType
-                );
-                if (!current?.createdByName && !current?.createdByEmail)
-                  return null;
-                return (
-                  <div style={{ color: "#94a3b8", fontSize: 12 }}>
-                    Agregado por:{" "}
-                    {current.createdByName ||
-                      (current.createdByEmail
-                        ? current.createdByEmail.split("@")[0]
-                        : "")}
+                ) : details.runtime ? (
+                  <div style={{ color: "#cbd5e1", fontSize: 13 }}>
+                    Duración: {details.runtime} min
                   </div>
-                );
-              })()}
+                ) : null}
 
-              {selected.mediaType === "tv" ? (
-                <div style={{ color: "#cbd5e1", fontSize: 13 }}>
-                  {details.number_of_seasons
-                    ? `Temporadas: ${details.number_of_seasons}`
-                    : ""}
-                  {details.number_of_episodes
-                    ? ` • Episodios: ${details.number_of_episodes}`
-                    : ""}
-                </div>
-              ) : details.runtime ? (
-                <div style={{ color: "#cbd5e1", fontSize: 13 }}>
-                  Duración: {details.runtime} min
-                </div>
-              ) : null}
-
-              <p
-                className="wlWrapAnywhere"
-                style={{ margin: 0, color: "#cbd5e1", lineHeight: 1.4 }}
-              >
-                {details.overview || "Sin sinopsis disponible."}
-              </p>
-            </div>
-          ) : (
-            <div style={emptyBox}>Sin detalles.</div>
-          )}
-        </section>
+                <p
+                  className="wlWrapAnywhere"
+                  style={{ margin: 0, color: "#cbd5e1", lineHeight: 1.4 }}
+                >
+                  {details.overview || "Sin sinopsis disponible."}
+                </p>
+              </div>
+            ) : (
+              <div style={emptyBox}>Sin detalles.</div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
@@ -648,6 +654,7 @@ function ItemRow({
   setSelected,
   setStatus,
   removeItem,
+  updateProgress,
 }: {
   it: WatchItem;
   selected: { mediaType: TmdbMediaType; tmdbId: number } | null;
@@ -759,7 +766,7 @@ function ItemRow({
 const card: React.CSSProperties = {
   border: "2px solid rgba(148,163,184,.2)",
   borderRadius: 14,
-  padding: 12,
+  padding: 14,
   background: "rgba(2,6,23,.35)",
   minWidth: 0,
 };

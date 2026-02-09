@@ -874,7 +874,7 @@ export default function TamagotchiPage() {
             >
               <div
                 style={{
-                  width: canvasCssW,
+                  width: cssW ? `${cssW}px` : "100%",
                   maxWidth: "100%",
                   display: "grid",
                   placeItems: "center",

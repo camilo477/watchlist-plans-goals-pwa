@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type AppState = "MENU" | "ACTION";
 type ActionType = "MUSIC" | "SLEEP" | "EAT" | "BATH" | "SICK";
@@ -173,7 +173,7 @@ function useAudio() {
   const oscRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
 
-  const ensure = () => {
+  const ensure = useCallback(() => {
     if (!ctxRef.current) {
       const AudioCtx = (window.AudioContext ||
         (window as any).webkitAudioContext) as any;
@@ -187,9 +187,9 @@ function useAudio() {
       gainRef.current = g;
     }
     return ctx;
-  };
+  }, []);
 
-  const stop = () => {
+  const stop = useCallback(() => {
     const ctx = ctxRef.current;
     const osc = oscRef.current;
     const g = gainRef.current;
@@ -210,55 +210,61 @@ function useAudio() {
       } catch {}
     }
     oscRef.current = null;
-  };
+  }, []);
 
-  const beep = async (freqHz: number, ms: number, vol = 0.15) => {
-    const ctx = ensure();
-    if (ctx.state === "suspended") await ctx.resume();
+  const beep = useCallback(
+    async (freqHz: number, ms: number, vol = 0.15) => {
+      const ctx = ensure();
+      if (ctx.state === "suspended") await ctx.resume();
 
-    stop();
+      stop();
 
-    const osc = ctx.createOscillator();
-    osc.type = "square";
-    osc.frequency.value = freqHz;
+      const osc = ctx.createOscillator();
+      osc.type = "square";
+      osc.frequency.value = freqHz;
 
-    const g = gainRef.current!;
-    g.gain.cancelScheduledValues(ctx.currentTime);
-    g.gain.setValueAtTime(0, ctx.currentTime);
-    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.005);
+      const g = gainRef.current!;
+      g.gain.cancelScheduledValues(ctx.currentTime);
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.005);
 
-    osc.connect(g);
-    osc.start();
-    oscRef.current = osc;
+      osc.connect(g);
+      osc.start();
+      oscRef.current = osc;
 
-    window.setTimeout(() => stop(), ms);
-  };
+      window.setTimeout(() => stop(), ms);
+    },
+    [ensure, stop],
+  );
 
-  const playRandomMelody = async (onDone: () => void) => {
-    const ctx = ensure();
-    if (ctx.state === "suspended") await ctx.resume();
+  const playRandomMelody = useCallback(
+    async (onDone: () => void) => {
+      const ctx = ensure();
+      if (ctx.state === "suspended") await ctx.resume();
 
-    const melodies: number[][] = [
-      [784, 988, 1175, 988, 784, 659, 784],
-      [523, 659, 784, 659, 523, 440, 523],
-      [392, 494, 587, 494, 392, 330, 392],
-    ];
-    const m = melodies[Math.floor(Math.random() * melodies.length)];
-    let i = 0;
+      const melodies: number[][] = [
+        [784, 988, 1175, 988, 784, 659, 784],
+        [523, 659, 784, 659, 523, 440, 523],
+        [392, 494, 587, 494, 392, 330, 392],
+      ];
+      const m = melodies[Math.floor(Math.random() * melodies.length)];
+      let i = 0;
 
-    const step = async () => {
-      if (i >= m.length) {
-        stop();
-        onDone();
-        return;
-      }
-      await beep(m[i], 140, 0.12);
-      i++;
-      window.setTimeout(step, 170);
-    };
+      const step = async () => {
+        if (i >= m.length) {
+          stop();
+          onDone();
+          return;
+        }
+        await beep(m[i], 140, 0.12);
+        i++;
+        window.setTimeout(step, 170);
+      };
 
-    step();
-  };
+      step();
+    },
+    [ensure, beep, stop],
+  );
 
   return { beep, stop, playRandomMelody };
 }

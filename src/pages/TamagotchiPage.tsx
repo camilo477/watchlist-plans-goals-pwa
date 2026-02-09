@@ -25,7 +25,6 @@ const clampi = (v: number, lo: number, hi: number) =>
 
 const LCD_W = 84;
 const LCD_H = 48;
-const SCALE = 7;
 
 const PET_W = 30;
 const PET_H = 21;
@@ -96,7 +95,6 @@ const PET_MESSAGES = [
 ];
 
 function assetUrl(fileName: string) {
-  // Vite: resuelve desde este archivo hacia ../assets
   return new URL(`../assets/${fileName}`, import.meta.url).toString();
 }
 
@@ -124,13 +122,11 @@ function useAssets() {
       ...frames4("sleep"),
       ...frames4("sick"),
       ...frames4("music"),
-
       "sel1",
       "sel2",
       "sel3",
       "sel4",
       "sel5",
-
       "foodIcon1",
       "foodIcon2",
       "medicina1",
@@ -163,6 +159,7 @@ function useAssets() {
         setError(e?.message ?? "Error cargando assets");
       }
     })();
+
     return () => {
       alive = false;
     };
@@ -266,9 +263,21 @@ function useAudio() {
   return { beep, stop, playRandomMelody };
 }
 
+function useViewport() {
+  const [v, setV] = useState({ w: window.innerWidth, h: window.innerHeight });
+  useEffect(() => {
+    const onResize = () =>
+      setV({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return v;
+}
+
 export default function TamagotchiPage() {
   const { assets, error } = useAssets();
   const { beep, stop: songStop, playRandomMelody } = useAudio();
+  const { w: vw } = useViewport();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -279,9 +288,7 @@ export default function TamagotchiPage() {
 
   const [appState, setAppState] = useState<AppState>("MENU");
   const [selected, setSelected] = useState<number>(0);
-
   const [curAction, setCurAction] = useState<ActionType>("MUSIC");
-
   const [iconFrame, setIconFrame] = useState<0 | 1>(0);
   const [petFrame, setPetFrame] = useState<0 | 1 | 2 | 3>(0);
 
@@ -302,6 +309,13 @@ export default function TamagotchiPage() {
   });
 
   const musicRef = useRef<{ playing: boolean }>({ playing: false });
+
+  const scale = useMemo(() => {
+    // disponible para el canvas: casi todo el ancho en móvil
+    const maxCanvasW = Math.min(vw - 48, 520);
+    const s = Math.floor(maxCanvasW / LCD_W);
+    return clampi(s, 3, 10);
+  }, [vw]);
 
   const pickIcon = (): IconType => {
     const p = petRef.current;
@@ -352,32 +366,50 @@ export default function TamagotchiPage() {
     }
   };
 
+  const actionMap: ActionType[] = ["MUSIC", "SLEEP", "EAT", "BATH", "SICK"];
+
+  const pressLeft = () => {
+    if (appState !== "MENU") return;
+    setSelected((s) => (s + 4) % 5);
+    beep(784, 25);
+  };
+  const pressRight = () => {
+    if (appState !== "MENU") return;
+    setSelected((s) => (s + 1) % 5);
+    beep(784, 25);
+  };
+  const pressA = () => {
+    if (appState !== "MENU") return;
+    startAction(actionMap[selected]);
+  };
+  const pressB = () => {
+    if (appState === "MENU") return;
+    songStop();
+    musicRef.current.playing = false;
+    setAppState("MENU");
+    beep(392, 40);
+  };
+
+  // Teclado (desktop)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
-
       if (appState === "MENU") {
         if (e.key === "ArrowLeft") {
-          setSelected((s) => (s + 4) % 5);
-          beep(784, 25);
+          pressLeft();
           e.preventDefault();
         }
         if (e.key === "ArrowRight") {
-          setSelected((s) => (s + 1) % 5);
-          beep(784, 25);
+          pressRight();
           e.preventDefault();
         }
         if (e.key === "Enter" || k === "a" || e.key === " ") {
-          const map: ActionType[] = ["MUSIC", "SLEEP", "EAT", "BATH", "SICK"];
-          startAction(map[selected]);
+          pressA();
           e.preventDefault();
         }
       } else {
         if (e.key === "Escape" || k === "b" || e.key === "Backspace") {
-          songStop();
-          musicRef.current.playing = false;
-          setAppState("MENU");
-          beep(392, 40);
+          pressB();
           e.preventDefault();
         }
       }
@@ -388,6 +420,7 @@ export default function TamagotchiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appState, selected]);
 
+  // Tick de stats
   useEffect(() => {
     const id = window.setInterval(() => {
       const now = performance.now();
@@ -407,15 +440,9 @@ export default function TamagotchiPage() {
             p.health = clampi(p.health - 2, 0, 100);
             p.happiness = clampi(p.happiness - 1, 0, 100);
           }
-          if (p.energy <= 20) {
-            p.happiness = clampi(p.happiness - 1, 0, 100);
-          }
-          if (p.hygiene <= 20) {
-            p.health = clampi(p.health - 1, 0, 100);
-          }
-          if (p.health <= 30) {
-            p.happiness = clampi(p.happiness - 2, 0, 100);
-          }
+          if (p.energy <= 20) p.happiness = clampi(p.happiness - 1, 0, 100);
+          if (p.hygiene <= 20) p.health = clampi(p.health - 1, 0, 100);
+          if (p.health <= 30) p.happiness = clampi(p.happiness - 2, 0, 100);
 
           const m = msgRef.current;
           if (
@@ -435,9 +462,9 @@ export default function TamagotchiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Animaciones
   useEffect(() => {
     let alive = true;
-
     let lastIcon = performance.now();
     let lastPet = performance.now();
 
@@ -449,12 +476,10 @@ export default function TamagotchiPage() {
         lastIcon = now;
         setIconFrame((f) => (f === 0 ? 1 : 0));
       }
-
       if (now - lastPet >= PET_FRAME_MS) {
         lastPet = now;
         setPetFrame((f) => ((f + 1) & 3) as any);
       }
-
       requestAnimationFrame(tick);
     };
 
@@ -464,6 +489,7 @@ export default function TamagotchiPage() {
     };
   }, []);
 
+  // Auto-fin de acción (excepto MUSIC)
   useEffect(() => {
     if (appState !== "ACTION") return;
     if (curAction === "MUSIC") return;
@@ -486,13 +512,13 @@ export default function TamagotchiPage() {
         beep(880, 60);
         window.setTimeout(() => beep(1175, 90), 85);
       }
-
       setAppState("MENU");
     }, ms);
 
     return () => window.clearTimeout(id);
   }, [appState, curAction, beep]);
 
+  // Render (LCD fondo negro)
   useEffect(() => {
     if (!assets) return;
     const canvas = canvasRef.current;
@@ -516,15 +542,17 @@ export default function TamagotchiPage() {
       }
       lastRender = now;
 
+      // Fondo NEGRO
       ctx.clearRect(0, 0, LCD_W, LCD_H);
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, LCD_W, LCD_H);
 
+      // Menú
       const menuImg = assets[`sel${selected + 1}`];
       if (menuImg) ctx.drawImage(menuImg, menuX, menuY, MENU_W, MENU_H);
 
+      // Pet frame
       const frameIdx = (petFrame as number) + 1;
-
       const actionKey = (() => {
         if (appState === "ACTION") {
           if (curAction === "MUSIC") return "music";
@@ -539,6 +567,7 @@ export default function TamagotchiPage() {
       const petImg = assets[`${actionKey}${frameIdx}`];
       if (petImg) ctx.drawImage(petImg, petX, petY, PET_W, PET_H);
 
+      // Icono (arriba izq)
       const iconType = pickIcon();
       if (iconType !== "NONE") {
         const iconName =
@@ -556,16 +585,17 @@ export default function TamagotchiPage() {
         if (ic) ctx.drawImage(ic, 0, 0, ICON_W, ICON_H);
       }
 
+      // Mensaje (fondo negro + texto blanco)
       const m = msgRef.current;
       if (hasAlert()) m.visible = false;
 
       if (m.visible && now <= m.untilMs) {
         const text = PET_MESSAGES[m.idx] ?? "";
 
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, 84, 10);
 
-        ctx.fillStyle = "#000000";
+        ctx.fillStyle = "#ffffff";
         ctx.font = "8px monospace";
         ctx.textBaseline = "top";
         ctx.fillText(text, ICON_W + 1, 1);
@@ -588,7 +618,7 @@ export default function TamagotchiPage() {
         <h3>Error cargando assets</h3>
         <div>{String(error)}</div>
         <div style={{ marginTop: 8 }}>
-          Confirma que estén en <b>src/assets/</b> y que existan nombres como{" "}
+          Confirma que estén en <b>src/assets/</b> y existan nombres como{" "}
           <code>idle1.png</code>, <code>sel1.png</code>,{" "}
           <code>foodIcon1.png</code>.
         </div>
@@ -606,87 +636,216 @@ export default function TamagotchiPage() {
 
   const p = petRef.current;
 
+  const Btn = ({
+    label,
+    sub,
+    onPress,
+    disabled,
+  }: {
+    label: string;
+    sub?: string;
+    onPress: () => void;
+    disabled?: boolean;
+  }) => (
+    <button
+      type="button"
+      onClick={onPress}
+      disabled={disabled}
+      style={{
+        border: "1px solid rgba(255,255,255,0.18)",
+        background: disabled
+          ? "rgba(255,255,255,0.06)"
+          : "rgba(255,255,255,0.10)",
+        color: disabled ? "rgba(255,255,255,0.35)" : "#fff",
+        borderRadius: 14,
+        padding: "14px 16px",
+        minWidth: 86,
+        fontWeight: 800,
+        letterSpacing: 0.5,
+        cursor: disabled ? "not-allowed" : "pointer",
+        touchAction: "manipulation",
+        userSelect: "none",
+      }}
+    >
+      <div style={{ fontSize: 16 }}>{label}</div>
+      {sub ? (
+        <div style={{ fontSize: 11, opacity: 0.8, marginTop: 2 }}>{sub}</div>
+      ) : null}
+    </button>
+  );
+
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
+        background: "#0d0f12",
+        padding: 16,
         display: "grid",
         placeItems: "center",
-        background: "#111",
-        padding: 24,
-        gap: 16,
         fontFamily: "system-ui",
         color: "#eee",
       }}
     >
       <div
         style={{
-          display: "flex",
-          gap: 18,
-          alignItems: "center",
-          flexWrap: "wrap",
+          width: "min(920px, 100%)",
+          display: "grid",
+          gridTemplateColumns: vw < 860 ? "1fr" : "1.2fr 1fr",
+          gap: 16,
+          alignItems: "start",
         }}
       >
-        <div>
-          <div style={{ fontSize: 14, opacity: 0.9 }}>Controles:</div>
-          <div style={{ fontSize: 13, opacity: 0.85 }}>
-            ←/→ mover · Enter/A iniciar · Esc/B cancelar música
-          </div>
-          <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>
-            Estado: {appState} · Acción: {curAction} · Selección: {selected + 1}
-          </div>
-        </div>
-
-        <div style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.35 }}>
-          <div>Hambre: {p.hunger}</div>
-          <div>Energía: {p.energy}</div>
-          <div>Higiene: {p.hygiene}</div>
-          <div>Salud: {p.health}</div>
-          <div>Felicidad: {p.happiness}</div>
-        </div>
-      </div>
-
-      <div
-        style={{
-          background: "#c33",
-          padding: 18,
-          borderRadius: 16,
-          boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-        }}
-      >
+        {/* Display */}
         <div
           style={{
-            textAlign: "center",
-            fontWeight: 700,
-            marginBottom: 10,
-            color: "#222",
-          }}
-        >
-          Nokia 5110 (sim)
-        </div>
-
-        <div
-          style={{
-            background: "#fff",
-            padding: 10,
-            borderRadius: 12,
+            background: "#c33",
+            padding: 16,
+            borderRadius: 18,
+            boxShadow: "0 16px 40px rgba(0,0,0,0.38)",
             display: "grid",
-            placeItems: "center",
+            gap: 12,
+            justifyItems: "center",
           }}
         >
-          <canvas
-            ref={canvasRef}
-            width={LCD_W}
-            height={LCD_H}
+          <div
+            style={{ textAlign: "center", fontWeight: 900, color: "#231f20" }}
+          >
+            Nokia 5110
+          </div>
+
+          <div
             style={{
-              width: LCD_W * SCALE,
-              height: LCD_H * SCALE,
-              imageRendering: "pixelated",
-              border: "3px solid #000",
-              borderRadius: 6,
-              background: "#fff",
+              background: "#111",
+              padding: 10,
+              borderRadius: 14,
+              width: "fit-content",
             }}
-          />
+          >
+            <canvas
+              ref={canvasRef}
+              width={LCD_W}
+              height={LCD_H}
+              style={{
+                width: LCD_W * scale,
+                height: LCD_H * scale,
+                imageRendering: "pixelated",
+                border: "3px solid #000",
+                borderRadius: 8,
+                background: "#000",
+                display: "block",
+              }}
+            />
+          </div>
+
+          {/* Botones mobile */}
+          <div
+            style={{
+              width: "100%",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginTop: 4,
+            }}
+          >
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <Btn
+                label="◀"
+                sub="Left"
+                onPress={pressLeft}
+                disabled={appState !== "MENU"}
+              />
+              <Btn
+                label="▶"
+                sub="Right"
+                onPress={pressRight}
+                disabled={appState !== "MENU"}
+              />
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <Btn
+                label="A"
+                sub="Select"
+                onPress={pressA}
+                disabled={appState !== "MENU"}
+              />
+              <Btn
+                label="B"
+                sub="Back"
+                onPress={pressB}
+                disabled={appState === "MENU"}
+              />
+            </div>
+          </div>
+
+          <div style={{ fontSize: 12, opacity: 0.85, textAlign: "center" }}>
+            Teclado: ←/→ · Enter/A · Esc/B
+          </div>
+        </div>
+
+        {/* Panel info */}
+        <div
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.10)",
+            borderRadius: 18,
+            padding: 16,
+            display: "grid",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Estado</div>
+              <div style={{ fontSize: 16, fontWeight: 900 }}>{appState}</div>
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
+                Acción: <b>{curAction}</b> · Sel: <b>{selected + 1}</b>
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Edad</div>
+              <div style={{ fontSize: 16, fontWeight: 900 }}>
+                {p.ageTicks} ticks
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              fontSize: 13,
+            }}
+          >
+            <div>
+              Hambre: <b>{p.hunger}</b>
+            </div>
+            <div>
+              Energía: <b>{p.energy}</b>
+            </div>
+            <div>
+              Higiene: <b>{p.hygiene}</b>
+            </div>
+            <div>
+              Salud: <b>{p.health}</b>
+            </div>
+            <div>
+              Felicidad: <b>{p.happiness}</b>
+            </div>
+          </div>
+
+          <div style={{ fontSize: 12, opacity: 0.8, lineHeight: 1.35 }}>
+            En móvil usa los botones. En desktop puedes usar teclado.
+            <br />
+            La pantalla está en <b>fondo negro</b> como el LCD real.
+          </div>
         </div>
       </div>
     </div>

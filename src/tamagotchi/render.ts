@@ -3,7 +3,6 @@ import {
   ACT_BATH,
   ACT_EAT,
   ACT_MUSIC,
-  ACT_SICK,
   ACT_SLEEP,
   MENU_SEL, 
   getFrameFor,
@@ -145,7 +144,7 @@ function actionToMenuIndex(a: number): 0 | 1 | 2 | 3 | 4 {
   if (a === ACT_SLEEP) return 1;
   if (a === ACT_EAT) return 2;
   if (a === ACT_BATH) return 3;
-  return 4; // ACT_SICK
+  return 4; 
 }
 
 // =========================

@@ -263,7 +263,9 @@ function useAudio() {
   return { beep, stop, playRandomMelody };
 }
 
-function useElementWidth(ref: React.RefObject<HTMLElement>) {
+function useElementWidth<T extends HTMLElement>(
+  ref: React.RefObject<T | null>,
+) {
   const [w, setW] = useState<number>(0);
 
   useEffect(() => {
@@ -276,8 +278,7 @@ function useElementWidth(ref: React.RefObject<HTMLElement>) {
     });
 
     ro.observe(el);
-    const rect = el.getBoundingClientRect();
-    setW(rect.width);
+    setW(el.getBoundingClientRect().width);
 
     return () => ro.disconnect();
   }, [ref]);

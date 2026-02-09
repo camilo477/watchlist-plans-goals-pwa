@@ -8,6 +8,7 @@ import RoulettePage from "./pages/RoulettePage";
 
 import RequireAuth from "./auth/RequireAuth";
 import { AuthProvider } from "./auth/AuthProvider";
+import TamagotchiPage from "./pages/TamagotchiPage";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="planes" element={<PlansPage />} />
             <Route path="metas" element={<GoalsPage />} />
             <Route path="ruleta" element={<RoulettePage />} />
+            <Route path="tamagotchi" element={<TamagotchiPage />} />
           </Route>
         </Route>
 

@@ -117,7 +117,7 @@ export default function HomeLayout() {
 
         .bottomNavInner{
           display:grid;
-          grid-template-columns: repeat(4, minmax(0,1fr));
+          grid-template-columns: repeat(5, minmax(0,1fr));
           gap: 8px;
           max-width: 700px;
           margin: 0 auto;
@@ -184,6 +184,9 @@ export default function HomeLayout() {
           <Link to="/ruleta" style={topLinkStyle(is("/ruleta"))}>
             Ruleta
           </Link>
+          <Link to="/tamagotchi" style={topLinkStyle(is("/tamagotchi"))}>
+            Tamagotchi
+          </Link>
         </nav>
       </header>
 
@@ -221,6 +224,13 @@ export default function HomeLayout() {
           >
             <span className="bIcon"></span>
             Ruleta
+          </Link>
+          <Link
+            to="/tamagotchi"
+            className={`bItem ${is("/tamagotchi") ? "bItemActive" : ""}`}
+          >
+            <span className="bIcon"></span>
+            Tama
           </Link>
         </div>
       </div>

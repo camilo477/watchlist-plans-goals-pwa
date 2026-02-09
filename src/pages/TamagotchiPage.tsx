@@ -426,7 +426,7 @@ export default function TamagotchiPage() {
 
     actionCtrlRef.current.loopsDone = 0;
     actionCtrlRef.current.loopsTarget =
-      a === "MUSIC" ? 999 : a === "SICK" ? 2 : a === "MUSIC" ? 12 : 8;
+      a === "MUSIC" ? 999 : a === "SICK" ? 2 : 8;
 
     if (a === "MUSIC") {
       musicRef.current.playing = true;

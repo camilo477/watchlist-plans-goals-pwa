@@ -1,5 +1,5 @@
 // src/tamagotchi/Tamagotchi.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DEFAULT_POS,
   MENU_SEL,
@@ -27,11 +27,11 @@ const H = 48;
 export default function Tamagotchi() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [selected, setSelected] = useState<0 | 1 | 2 | 3 | 4>(0);
-  const [action, setAction] = useState<number>(ACT_MUSIC); // tu action actual
-  const [petFrame, setPetFrame] = useState(0);
-  const [iconFrame, setIconFrame] = useState(0);
-  const [alert, setAlert] = useState<AlertType>(null);
+  const [selected] = useState<0 | 1 | 2 | 3 | 4>(0);
+  const [action, setAction] = useState<number>(ACT_MUSIC);
+  const [petFrame] = useState(0);
+  const [iconFrame] = useState(0);
+  const [alert] = useState<AlertType>(null);
 
   const alertIconFrame = useMemo(() => {
     if (!alert) return null;
@@ -51,7 +51,6 @@ export default function Tamagotchi() {
     drawBitmap1bpp(ctx, bmp, x, y);
   };
 
-  // Loop principal: render + music update
   useEffect(() => {
     let raf = 0;
 
@@ -67,14 +66,11 @@ export default function Tamagotchi() {
 
       const { petX, petY, menuX, menuY } = DEFAULT_POS;
 
-      // ✅ reemplazo del placeholder:
       drawBitmap(MENU_SEL[selected], menuX, menuY);
       drawBitmap(getFrameFor(action as any, petFrame), petX, petY);
       if (alertIconFrame) drawBitmap(alertIconFrame, 2, 2);
 
-      // música
       updateSong(t);
-
       raf = requestAnimationFrame(tick);
     };
 
@@ -82,7 +78,6 @@ export default function Tamagotchi() {
     return () => cancelAnimationFrame(raf);
   }, [selected, action, petFrame, alertIconFrame]);
 
-  // ✅ Conectar acciones:
   const handleActionMusic = () => {
     if (!isSongPlaying()) startRandomSong();
     else stopSong();
@@ -91,8 +86,6 @@ export default function Tamagotchi() {
 
   const handlePressB = () => {
     stopSong();
-    // volver a menú (ajusta a tu estado real)
-    // setAppState("menu");
   };
 
   return (
@@ -103,8 +96,6 @@ export default function Tamagotchi() {
         height={H}
         style={{ imageRendering: "pixelated" }}
       />
-
-      {/* Ejemplo de hooks a tus botones */}
       <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
         <button onClick={handleActionMusic}>MUSIC</button>
         <button onClick={handlePressB}>B</button>

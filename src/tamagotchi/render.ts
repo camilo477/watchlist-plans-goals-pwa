@@ -63,7 +63,6 @@ export function drawBitmap1bpp(
   bmp: Bitmap1bpp,
   x0: number,
   y0: number,
-  color = 1,
   invert = false
 ) {
   const { w, h, data } = bmp;

@@ -347,15 +347,19 @@ export default function TamagotchiPage() {
   const prevPetFrameRef = useRef<number>(0);
 
   // Escala SIEMPRE entera y que quepa (para evitar blur)
-  const scale = useMemo(() => {
-    const available = Math.max(0, wrapW - 24); // padding interno aprox
-    if (!available) return 4;
-    const s = Math.floor(available / LCD_W);
-    return clampi(s, 2, 9);
-  }, [wrapW]);
+  const { cssW, cssH } = useMemo(() => {
+    const padding = 20; // incluye padding del wrapper + borde del canvas
+    const available = Math.max(0, wrapW - padding);
 
-  const canvasCssW = LCD_W * scale;
-  const canvasCssH = LCD_H * scale;
+    // escala entera para que no se vea borroso
+    const s = clampi(Math.floor(available / LCD_W), 2, 9);
+
+    // ancho/alto final en CSS (nunca más grande que available)
+    const w = Math.min(available, LCD_W * s);
+    const h = (w * LCD_H) / LCD_W;
+
+    return { cssW: Math.floor(w), cssH: Math.floor(h) };
+  }, [wrapW]);
 
   const pickIcon = (): IconType => {
     const p = petRef.current;
@@ -688,12 +692,14 @@ export default function TamagotchiPage() {
   if (error) {
     return (
       <div
+        ref={lcdWrapRef}
         style={{
-          padding: 16,
-          fontFamily: "system-ui",
-          color: "#fff",
           background: "#111",
-          minHeight: "100dvh",
+          padding: 10,
+          borderRadius: 14,
+          width: "100%",
+          boxSizing: "border-box",
+          overflow: "hidden",
         }}
       >
         <h3 style={{ margin: 0 }}>Error cargando assets</h3>
@@ -879,8 +885,10 @@ export default function TamagotchiPage() {
                   width={LCD_W}
                   height={LCD_H}
                   style={{
-                    width: `${canvasCssW}px`,
-                    height: `${canvasCssH}px`,
+                    width: cssW ? `${cssW}px` : "100%",
+                    height: cssH ? `${cssH}px` : "auto",
+                    maxWidth: "100%",
+                    aspectRatio: `${LCD_W} / ${LCD_H}`,
                     imageRendering: "pixelated",
                     border: "3px solid #000",
                     borderRadius: 8,

@@ -263,23 +263,36 @@ function useAudio() {
   return { beep, stop, playRandomMelody };
 }
 
-function useViewport() {
-  const [v, setV] = useState({ w: window.innerWidth, h: window.innerHeight });
+function useElementWidth(ref: React.RefObject<HTMLElement>) {
+  const [w, setW] = useState<number>(0);
+
   useEffect(() => {
-    const onResize = () =>
-      setV({ w: window.innerWidth, h: window.innerHeight });
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-  return v;
+    const el = ref.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(() => {
+      const rect = el.getBoundingClientRect();
+      setW(rect.width);
+    });
+
+    ro.observe(el);
+    const rect = el.getBoundingClientRect();
+    setW(rect.width);
+
+    return () => ro.disconnect();
+  }, [ref]);
+
+  return w;
 }
 
 export default function TamagotchiPage() {
   const { assets, error } = useAssets();
   const { beep, stop: songStop, playRandomMelody } = useAudio();
-  const { w: vw } = useViewport();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const lcdWrapRef = useRef<HTMLDivElement | null>(null);
+
+  const wrapW = useElementWidth(lcdWrapRef);
 
   const petX = 2;
   const petY = 48 - PET_H - 1;
@@ -311,11 +324,12 @@ export default function TamagotchiPage() {
   const musicRef = useRef<{ playing: boolean }>({ playing: false });
 
   const scale = useMemo(() => {
-    // disponible para el canvas: casi todo el ancho en móvil
-    const maxCanvasW = Math.min(vw - 48, 520);
-    const s = Math.floor(maxCanvasW / LCD_W);
-    return clampi(s, 3, 10);
-  }, [vw]);
+    // ancho disponible dentro del contenedor del LCD
+    const available = Math.max(0, wrapW - 24); // padding interno
+    if (!available) return 4;
+    const s = Math.floor(available / LCD_W);
+    return clampi(s, 2, 9); // nunca enorme, nunca 0
+  }, [wrapW]);
 
   const pickIcon = (): IconType => {
     const p = petRef.current;
@@ -328,6 +342,30 @@ export default function TamagotchiPage() {
   };
 
   const hasAlert = () => pickIcon() !== "NONE";
+
+  const actionMap: ActionType[] = ["MUSIC", "SLEEP", "EAT", "BATH", "SICK"];
+
+  const pressLeft = () => {
+    if (appState !== "MENU") return;
+    setSelected((s) => (s + 4) % 5);
+    beep(784, 25);
+  };
+  const pressRight = () => {
+    if (appState !== "MENU") return;
+    setSelected((s) => (s + 1) % 5);
+    beep(784, 25);
+  };
+  const pressA = () => {
+    if (appState !== "MENU") return;
+    startAction(actionMap[selected]);
+  };
+  const pressB = () => {
+    if (appState === "MENU") return;
+    songStop();
+    musicRef.current.playing = false;
+    setAppState("MENU");
+    beep(392, 40);
+  };
 
   const startAction = async (a: ActionType) => {
     setCurAction(a);
@@ -366,31 +404,7 @@ export default function TamagotchiPage() {
     }
   };
 
-  const actionMap: ActionType[] = ["MUSIC", "SLEEP", "EAT", "BATH", "SICK"];
-
-  const pressLeft = () => {
-    if (appState !== "MENU") return;
-    setSelected((s) => (s + 4) % 5);
-    beep(784, 25);
-  };
-  const pressRight = () => {
-    if (appState !== "MENU") return;
-    setSelected((s) => (s + 1) % 5);
-    beep(784, 25);
-  };
-  const pressA = () => {
-    if (appState !== "MENU") return;
-    startAction(actionMap[selected]);
-  };
-  const pressB = () => {
-    if (appState === "MENU") return;
-    songStop();
-    musicRef.current.playing = false;
-    setAppState("MENU");
-    beep(392, 40);
-  };
-
-  // Teclado (desktop)
+  // teclado
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
@@ -414,13 +428,12 @@ export default function TamagotchiPage() {
         }
       }
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appState, selected]);
 
-  // Tick de stats
+  // tick stats
   useEffect(() => {
     const id = window.setInterval(() => {
       const now = performance.now();
@@ -462,7 +475,7 @@ export default function TamagotchiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Animaciones
+  // anim frames
   useEffect(() => {
     let alive = true;
     let lastIcon = performance.now();
@@ -489,7 +502,7 @@ export default function TamagotchiPage() {
     };
   }, []);
 
-  // Auto-fin de acción (excepto MUSIC)
+  // auto-finish action (no music)
   useEffect(() => {
     if (appState !== "ACTION") return;
     if (curAction === "MUSIC") return;
@@ -518,7 +531,7 @@ export default function TamagotchiPage() {
     return () => window.clearTimeout(id);
   }, [appState, curAction, beep]);
 
-  // Render (LCD fondo negro)
+  // render canvas (fondo negro)
   useEffect(() => {
     if (!assets) return;
     const canvas = canvasRef.current;
@@ -542,16 +555,15 @@ export default function TamagotchiPage() {
       }
       lastRender = now;
 
-      // Fondo NEGRO
-      ctx.clearRect(0, 0, LCD_W, LCD_H);
-      ctx.fillStyle = "#000000";
+      // fondo negro
+      ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, LCD_W, LCD_H);
 
-      // Menú
+      // menu
       const menuImg = assets[`sel${selected + 1}`];
       if (menuImg) ctx.drawImage(menuImg, menuX, menuY, MENU_W, MENU_H);
 
-      // Pet frame
+      // pet
       const frameIdx = (petFrame as number) + 1;
       const actionKey = (() => {
         if (appState === "ACTION") {
@@ -567,7 +579,7 @@ export default function TamagotchiPage() {
       const petImg = assets[`${actionKey}${frameIdx}`];
       if (petImg) ctx.drawImage(petImg, petX, petY, PET_W, PET_H);
 
-      // Icono (arriba izq)
+      // icono
       const iconType = pickIcon();
       if (iconType !== "NONE") {
         const iconName =
@@ -585,17 +597,15 @@ export default function TamagotchiPage() {
         if (ic) ctx.drawImage(ic, 0, 0, ICON_W, ICON_H);
       }
 
-      // Mensaje (fondo negro + texto blanco)
+      // mensaje (texto blanco)
       const m = msgRef.current;
       if (hasAlert()) m.visible = false;
 
       if (m.visible && now <= m.untilMs) {
         const text = PET_MESSAGES[m.idx] ?? "";
-
-        ctx.fillStyle = "#000000";
+        ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, 84, 10);
-
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#fff";
         ctx.font = "8px monospace";
         ctx.textBaseline = "top";
         ctx.fillText(text, ICON_W + 1, 1);
@@ -614,13 +624,21 @@ export default function TamagotchiPage() {
 
   if (error) {
     return (
-      <div style={{ padding: 16, fontFamily: "system-ui" }}>
-        <h3>Error cargando assets</h3>
-        <div>{String(error)}</div>
-        <div style={{ marginTop: 8 }}>
-          Confirma que estén en <b>src/assets/</b> y existan nombres como{" "}
+      <div
+        style={{
+          padding: 16,
+          fontFamily: "system-ui",
+          color: "#fff",
+          background: "#111",
+          minHeight: "100dvh",
+        }}
+      >
+        <h3 style={{ margin: 0 }}>Error cargando assets</h3>
+        <div style={{ marginTop: 8 }}>{String(error)}</div>
+        <div style={{ marginTop: 8, opacity: 0.8 }}>
+          Confirma que estén en <b>src/assets</b> y existan:{" "}
           <code>idle1.png</code>, <code>sel1.png</code>,{" "}
-          <code>foodIcon1.png</code>.
+          <code>foodIcon1.png</code>, etc.
         </div>
       </div>
     );
@@ -628,13 +646,19 @@ export default function TamagotchiPage() {
 
   if (!assets) {
     return (
-      <div style={{ padding: 16, fontFamily: "system-ui" }}>
+      <div
+        style={{
+          padding: 16,
+          fontFamily: "system-ui",
+          color: "#fff",
+          background: "#111",
+          minHeight: "100dvh",
+        }}
+      >
         Cargando sprites...
       </div>
     );
   }
-
-  const p = petRef.current;
 
   const Btn = ({
     label,
@@ -665,6 +689,7 @@ export default function TamagotchiPage() {
         cursor: disabled ? "not-allowed" : "pointer",
         touchAction: "manipulation",
         userSelect: "none",
+        width: "100%",
       }}
     >
       <div style={{ fontSize: 16 }}>{label}</div>
@@ -679,172 +704,116 @@ export default function TamagotchiPage() {
       style={{
         minHeight: "100dvh",
         background: "#0d0f12",
-        padding: 16,
+        padding: 12,
         display: "grid",
         placeItems: "center",
         fontFamily: "system-ui",
         color: "#eee",
+        overflowX: "hidden",
       }}
     >
       <div
         style={{
           width: "min(920px, 100%)",
           display: "grid",
-          gridTemplateColumns: vw < 860 ? "1fr" : "1.2fr 1fr",
-          gap: 16,
-          alignItems: "start",
+          gridTemplateColumns: "1fr",
+          gap: 12,
         }}
       >
-        {/* Display */}
         <div
           style={{
             background: "#c33",
-            padding: 16,
+            padding: 12,
             borderRadius: 18,
             boxShadow: "0 16px 40px rgba(0,0,0,0.38)",
             display: "grid",
-            gap: 12,
-            justifyItems: "center",
+            gap: 10,
           }}
         >
           <div
-            style={{ textAlign: "center", fontWeight: 900, color: "#231f20" }}
+            style={{
+              textAlign: "center",
+              fontWeight: 900,
+              color: "#231f20",
+              fontSize: 14,
+            }}
           >
-            Nokia 5110
+            Tamagotchi
           </div>
 
+          {/* contenedor que define el ancho disponible para escalar */}
           <div
+            ref={lcdWrapRef}
             style={{
               background: "#111",
               padding: 10,
               borderRadius: 14,
-              width: "fit-content",
+              width: "100%",
+              boxSizing: "border-box",
             }}
           >
-            <canvas
-              ref={canvasRef}
-              width={LCD_W}
-              height={LCD_H}
+            <div
               style={{
-                width: LCD_W * scale,
-                height: LCD_H * scale,
-                imageRendering: "pixelated",
-                border: "3px solid #000",
-                borderRadius: 8,
-                background: "#000",
-                display: "block",
+                width: "100%",
+                display: "grid",
+                placeItems: "center",
               }}
-            />
+            >
+              <canvas
+                ref={canvasRef}
+                width={LCD_W}
+                height={LCD_H}
+                style={{
+                  width: Math.max(1, LCD_W * scale),
+                  height: Math.max(1, LCD_H * scale),
+                  maxWidth: "100%",
+                  maxHeight: "60vh",
+                  imageRendering: "pixelated",
+                  border: "3px solid #000",
+                  borderRadius: 8,
+                  background: "#000",
+                  display: "block",
+                }}
+              />
+            </div>
           </div>
 
           {/* Botones mobile */}
           <div
             style={{
-              width: "100%",
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: 10,
-              marginTop: 4,
             }}
           >
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <Btn
-                label="◀"
-                sub="Left"
-                onPress={pressLeft}
-                disabled={appState !== "MENU"}
-              />
-              <Btn
-                label="▶"
-                sub="Right"
-                onPress={pressRight}
-                disabled={appState !== "MENU"}
-              />
-            </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <Btn
-                label="A"
-                sub="Select"
-                onPress={pressA}
-                disabled={appState !== "MENU"}
-              />
-              <Btn
-                label="B"
-                sub="Back"
-                onPress={pressB}
-                disabled={appState === "MENU"}
-              />
-            </div>
+            <Btn
+              label="◀"
+              sub="Left"
+              onPress={pressLeft}
+              disabled={appState !== "MENU"}
+            />
+            <Btn
+              label="▶"
+              sub="Right"
+              onPress={pressRight}
+              disabled={appState !== "MENU"}
+            />
+            <Btn
+              label="A"
+              sub="Select"
+              onPress={pressA}
+              disabled={appState !== "MENU"}
+            />
+            <Btn
+              label="B"
+              sub="Back"
+              onPress={pressB}
+              disabled={appState === "MENU"}
+            />
           </div>
 
           <div style={{ fontSize: 12, opacity: 0.85, textAlign: "center" }}>
             Teclado: ←/→ · Enter/A · Esc/B
-          </div>
-        </div>
-
-        {/* Panel info */}
-        <div
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.10)",
-            borderRadius: 18,
-            padding: 16,
-            display: "grid",
-            gap: 12,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <div style={{ fontSize: 13, opacity: 0.85 }}>Estado</div>
-              <div style={{ fontSize: 16, fontWeight: 900 }}>{appState}</div>
-              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
-                Acción: <b>{curAction}</b> · Sel: <b>{selected + 1}</b>
-              </div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 13, opacity: 0.85 }}>Edad</div>
-              <div style={{ fontSize: 16, fontWeight: 900 }}>
-                {p.ageTicks} ticks
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-              fontSize: 13,
-            }}
-          >
-            <div>
-              Hambre: <b>{p.hunger}</b>
-            </div>
-            <div>
-              Energía: <b>{p.energy}</b>
-            </div>
-            <div>
-              Higiene: <b>{p.hygiene}</b>
-            </div>
-            <div>
-              Salud: <b>{p.health}</b>
-            </div>
-            <div>
-              Felicidad: <b>{p.happiness}</b>
-            </div>
-          </div>
-
-          <div style={{ fontSize: 12, opacity: 0.8, lineHeight: 1.35 }}>
-            En móvil usa los botones. En desktop puedes usar teclado.
-            <br />
-            La pantalla está en <b>fondo negro</b> como el LCD real.
           </div>
         </div>
       </div>

@@ -298,7 +298,6 @@ export default function TamagotchiPage() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lcdWrapRef = useRef<HTMLDivElement | null>(null);
-
   const wrapW = useElementWidth(lcdWrapRef);
 
   const petX = 2;
@@ -322,6 +321,16 @@ export default function TamagotchiPage() {
     lastTickMs: performance.now(),
   });
 
+  // HUD UI (para texto arriba)
+  const [hud, setHud] = useState(() => ({
+    hunger: 100,
+    energy: 100,
+    hygiene: 100,
+    health: 100,
+    happiness: 100,
+    ageTicks: 0,
+  }));
+
   const msgRef = useRef<{ visible: boolean; untilMs: number; idx: number }>({
     visible: false,
     untilMs: 0,
@@ -330,13 +339,23 @@ export default function TamagotchiPage() {
 
   const musicRef = useRef<{ playing: boolean }>({ playing: false });
 
+  // Control de loops de acción (igual Arduino)
+  const actionCtrlRef = useRef<{ loopsDone: number; loopsTarget: number }>({
+    loopsDone: 0,
+    loopsTarget: 8,
+  });
+  const prevPetFrameRef = useRef<number>(0);
+
+  // Escala SIEMPRE entera y que quepa (para evitar blur)
   const scale = useMemo(() => {
-    // ancho disponible dentro del contenedor del LCD
-    const available = Math.max(0, wrapW - 24); // padding interno
+    const available = Math.max(0, wrapW - 24); // padding interno aprox
     if (!available) return 4;
     const s = Math.floor(available / LCD_W);
-    return clampi(s, 2, 9); // nunca enorme, nunca 0
+    return clampi(s, 2, 9);
   }, [wrapW]);
+
+  const canvasCssW = LCD_W * scale;
+  const canvasCssH = LCD_H * scale;
 
   const pickIcon = (): IconType => {
     const p = petRef.current;
@@ -351,6 +370,32 @@ export default function TamagotchiPage() {
   const hasAlert = () => pickIcon() !== "NONE";
 
   const actionMap: ActionType[] = ["MUSIC", "SLEEP", "EAT", "BATH", "SICK"];
+
+  const finishAction = useCallback(
+    (a: ActionType) => {
+      // beep final (como tu Arduino)
+      if (a !== "MUSIC") {
+        if (a === "EAT") {
+          beep(988, 50);
+          window.setTimeout(() => beep(1319, 90), 70);
+        } else if (a === "SLEEP") {
+          beep(659, 60);
+          window.setTimeout(() => beep(988, 120), 80);
+        } else if (a === "BATH") {
+          beep(784, 50);
+          window.setTimeout(() => beep(1175, 90), 70);
+        } else if (a === "SICK") {
+          beep(523, 70);
+          window.setTimeout(() => beep(988, 130), 90);
+        } else {
+          beep(880, 60);
+          window.setTimeout(() => beep(1175, 90), 85);
+        }
+      }
+      setAppState("MENU");
+    },
+    [beep],
+  );
 
   const pressLeft = () => {
     if (appState !== "MENU") return;
@@ -379,11 +424,15 @@ export default function TamagotchiPage() {
     setAppState("ACTION");
     setPetFrame(0);
 
+    actionCtrlRef.current.loopsDone = 0;
+    actionCtrlRef.current.loopsTarget =
+      a === "MUSIC" ? 999 : a === "SICK" ? 2 : a === "MUSIC" ? 12 : 8;
+
     if (a === "MUSIC") {
       musicRef.current.playing = true;
       await playRandomMelody(() => {
         musicRef.current.playing = false;
-        setAppState("MENU");
+        finishAction("MUSIC");
       });
     } else if (a === "SLEEP") {
       beep(330, 80);
@@ -440,7 +489,7 @@ export default function TamagotchiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appState, selected]);
 
-  // tick stats
+  // tick stats + consola + HUD
   useEffect(() => {
     const id = window.setInterval(() => {
       const now = performance.now();
@@ -464,6 +513,10 @@ export default function TamagotchiPage() {
           if (p.hygiene <= 20) p.health = clampi(p.health - 1, 0, 100);
           if (p.health <= 30) p.happiness = clampi(p.happiness - 2, 0, 100);
 
+          console.log(
+            `[PET] tick ageTicks=${p.ageTicks} hunger=${p.hunger} energy=${p.energy} hygiene=${p.hygiene} health=${p.health} happy=${p.happiness}`,
+          );
+
           const m = msgRef.current;
           if (
             !m.visible &&
@@ -476,13 +529,23 @@ export default function TamagotchiPage() {
           }
         }
       }
-    }, 80);
+
+      // HUD refresco suave
+      setHud({
+        hunger: p.hunger,
+        energy: p.energy,
+        hygiene: p.hygiene,
+        health: p.health,
+        happiness: p.happiness,
+        ageTicks: p.ageTicks,
+      });
+    }, 120);
 
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // anim frames
+  // anim frames (pet + icon)
   useEffect(() => {
     let alive = true;
     let lastIcon = performance.now();
@@ -509,34 +572,25 @@ export default function TamagotchiPage() {
     };
   }, []);
 
-  // auto-finish action (no music)
+  // terminar acciones por loops (NO timeout)
   useEffect(() => {
+    const prev = prevPetFrameRef.current;
+    const curr = petFrame as number;
+    prevPetFrameRef.current = curr;
+
     if (appState !== "ACTION") return;
     if (curAction === "MUSIC") return;
 
-    const ms = curAction === "SICK" ? 600 : 2000;
-    const id = window.setTimeout(() => {
-      if (curAction === "EAT") {
-        beep(988, 50);
-        window.setTimeout(() => beep(1319, 90), 70);
-      } else if (curAction === "SLEEP") {
-        beep(659, 60);
-        window.setTimeout(() => beep(988, 120), 80);
-      } else if (curAction === "BATH") {
-        beep(784, 50);
-        window.setTimeout(() => beep(1175, 90), 70);
-      } else if (curAction === "SICK") {
-        beep(523, 70);
-        window.setTimeout(() => beep(988, 130), 90);
-      } else {
-        beep(880, 60);
-        window.setTimeout(() => beep(1175, 90), 85);
+    // loop completo cuando vuelve a 0 y antes era 3
+    if (prev === 3 && curr === 0) {
+      actionCtrlRef.current.loopsDone += 1;
+      if (
+        actionCtrlRef.current.loopsDone >= actionCtrlRef.current.loopsTarget
+      ) {
+        finishAction(curAction);
       }
-      setAppState("MENU");
-    }, ms);
-
-    return () => window.clearTimeout(id);
-  }, [appState, curAction, beep]);
+    }
+  }, [petFrame, appState, curAction, finishAction]);
 
   // render canvas (fondo negro)
   useEffect(() => {
@@ -604,7 +658,7 @@ export default function TamagotchiPage() {
         if (ic) ctx.drawImage(ic, 0, 0, ICON_W, ICON_H);
       }
 
-      // mensaje (texto blanco)
+      // mensaje
       const m = msgRef.current;
       if (hasAlert()) m.visible = false;
 
@@ -612,6 +666,8 @@ export default function TamagotchiPage() {
         const text = PET_MESSAGES[m.idx] ?? "";
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, 84, 10);
+
+        // Texto CRISP: sin reescalado raro (canvas siempre en múltiplos enteros)
         ctx.fillStyle = "#fff";
         ctx.font = "8px monospace";
         ctx.textBaseline = "top";
@@ -706,6 +762,36 @@ export default function TamagotchiPage() {
     </button>
   );
 
+  const StatPill = ({ k, v }: { k: string; v: number }) => (
+    <div
+      style={{
+        display: "inline-flex",
+        gap: 6,
+        alignItems: "center",
+        padding: "6px 10px",
+        borderRadius: 999,
+        background: "rgba(0,0,0,0.22)",
+        border: "1px solid rgba(0,0,0,0.25)",
+        color: "#231f20",
+        fontWeight: 900,
+        fontSize: 12,
+        lineHeight: 1,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span style={{ opacity: 0.9 }}>{k}</span>
+      <span
+        style={{
+          padding: "4px 8px",
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.22)",
+        }}
+      >
+        {v}
+      </span>
+    </div>
+  );
+
   return (
     <div
       style={{
@@ -748,6 +834,24 @@ export default function TamagotchiPage() {
             Tamagotchi
           </div>
 
+          {/* HUD */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              justifyContent: "center",
+              padding: "2px 0 6px",
+            }}
+          >
+            <StatPill k="Hunger" v={hud.hunger} />
+            <StatPill k="Energy" v={hud.energy} />
+            <StatPill k="Hygiene" v={hud.hygiene} />
+            <StatPill k="Health" v={hud.health} />
+            <StatPill k="Happy" v={hud.happiness} />
+            <StatPill k="Age" v={hud.ageTicks} />
+          </div>
+
           {/* contenedor que define el ancho disponible para escalar */}
           <div
             ref={lcdWrapRef}
@@ -760,28 +864,31 @@ export default function TamagotchiPage() {
             }}
           >
             <div
-              style={{
-                width: "100%",
-                display: "grid",
-                placeItems: "center",
-              }}
+              style={{ width: "100%", display: "grid", placeItems: "center" }}
             >
-              <canvas
-                ref={canvasRef}
-                width={LCD_W}
-                height={LCD_H}
+              <div
                 style={{
-                  width: Math.max(1, LCD_W * scale),
-                  height: Math.max(1, LCD_H * scale),
+                  width: canvasCssW,
                   maxWidth: "100%",
-                  maxHeight: "60vh",
-                  imageRendering: "pixelated",
-                  border: "3px solid #000",
-                  borderRadius: 8,
-                  background: "#000",
-                  display: "block",
+                  display: "grid",
+                  placeItems: "center",
                 }}
-              />
+              >
+                <canvas
+                  ref={canvasRef}
+                  width={LCD_W}
+                  height={LCD_H}
+                  style={{
+                    width: `${canvasCssW}px`,
+                    height: `${canvasCssH}px`,
+                    imageRendering: "pixelated",
+                    border: "3px solid #000",
+                    borderRadius: 8,
+                    background: "#000",
+                    display: "block",
+                  }}
+                />
+              </div>
             </div>
           </div>
 

@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type AppState = "MENU" | "ACTION";
-
 type ActionType = "MUSIC" | "SLEEP" | "EAT" | "BATH" | "SICK";
-
 type IconType =
   | "NONE"
   | "MEDICINA"
@@ -13,11 +11,11 @@ type IconType =
   | "NOTE";
 
 type PetStats = {
-  hunger: number; // 0..100 (0 hambriento, 100 lleno)
-  energy: number; // 0..100
-  hygiene: number; // 0..100
-  health: number; // 0..100
-  happiness: number; // 0..100
+  hunger: number;
+  energy: number;
+  hygiene: number;
+  health: number;
+  happiness: number;
   ageTicks: number;
   lastTickMs: number;
 };
@@ -25,11 +23,9 @@ type PetStats = {
 const clampi = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
 
-const ASSET_BASE = "/assets"; // <-- asegúrate de tener public/assets/*.png
-
 const LCD_W = 84;
 const LCD_H = 48;
-const SCALE = 7; // tamaño visual (multiplica el canvas)
+const SCALE = 7;
 
 const PET_W = 30;
 const PET_H = 21;
@@ -45,7 +41,6 @@ const TH_ENERGY = 25;
 const TH_HYGIENE = 25;
 const TH_HAPPY = 40;
 
-// tiempos (ms)
 const DEBUG_SPEEDUP = true;
 const PET_TICK_MS = DEBUG_SPEEDUP ? 5000 : 60000;
 
@@ -100,11 +95,16 @@ const PET_MESSAGES = [
   "Te adoro",
 ];
 
+function assetUrl(fileName: string) {
+  // Vite: resuelve desde este archivo hacia ../assets
+  return new URL(`../assets/${fileName}`, import.meta.url).toString();
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = reject;
+    img.onerror = () => reject(new Error(`No se pudo cargar: ${src}`));
     img.src = src;
   });
 }
@@ -117,7 +117,7 @@ function useAssets() {
 
   const names = useMemo(() => {
     const frames4 = (base: string) => [1, 2, 3, 4].map((i) => `${base}${i}`);
-    const list = [
+    return [
       ...frames4("idle"),
       ...frames4("eat"),
       ...frames4("bath"),
@@ -141,11 +141,7 @@ function useAssets() {
       "water2",
       "zzz1",
       "zzz2",
-
-      // si los tienes:
-      // "happy1","happy2","sad1","sad2","soso1","soso2"
     ];
-    return list;
   }, []);
 
   useEffect(() => {
@@ -154,7 +150,7 @@ function useAssets() {
       try {
         const entries = await Promise.all(
           names.map(async (n) => {
-            const img = await loadImage(`${ASSET_BASE}/${n}.png`);
+            const img = await loadImage(assetUrl(`${n}.png`));
             return [n, img] as const;
           }),
         );
@@ -175,19 +171,17 @@ function useAssets() {
   return { assets, error };
 }
 
-/**
- * WebAudio simple (beeps + melodía)
- */
 function useAudio() {
   const ctxRef = useRef<AudioContext | null>(null);
   const oscRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
 
   const ensure = () => {
-    if (!ctxRef.current)
-      ctxRef.current = new (
-        window.AudioContext || (window as any).webkitAudioContext
-      )();
+    if (!ctxRef.current) {
+      const AudioCtx = (window.AudioContext ||
+        (window as any).webkitAudioContext) as any;
+      ctxRef.current = new AudioCtx();
+    }
     const ctx = ctxRef.current!;
     if (!gainRef.current) {
       const g = ctx.createGain();
@@ -196,32 +190,6 @@ function useAudio() {
       gainRef.current = g;
     }
     return ctx;
-  };
-
-  const beep = async (freqHz: number, ms: number, vol = 0.15) => {
-    const ctx = ensure();
-    if (ctx.state === "suspended") await ctx.resume();
-
-    // corta lo anterior
-    stop();
-
-    const osc = ctx.createOscillator();
-    osc.type = "square";
-    osc.frequency.value = freqHz;
-
-    const g = gainRef.current!;
-    g.gain.cancelScheduledValues(ctx.currentTime);
-    g.gain.setValueAtTime(0, ctx.currentTime);
-    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.005);
-
-    osc.connect(g);
-    osc.start();
-
-    oscRef.current = osc;
-
-    window.setTimeout(() => {
-      stop();
-    }, ms);
   };
 
   const stop = () => {
@@ -247,12 +215,32 @@ function useAudio() {
     oscRef.current = null;
   };
 
-  // melodía muy simple (puedes reemplazar por tus SONGS 1:1)
+  const beep = async (freqHz: number, ms: number, vol = 0.15) => {
+    const ctx = ensure();
+    if (ctx.state === "suspended") await ctx.resume();
+
+    stop();
+
+    const osc = ctx.createOscillator();
+    osc.type = "square";
+    osc.frequency.value = freqHz;
+
+    const g = gainRef.current!;
+    g.gain.cancelScheduledValues(ctx.currentTime);
+    g.gain.setValueAtTime(0, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.005);
+
+    osc.connect(g);
+    osc.start();
+    oscRef.current = osc;
+
+    window.setTimeout(() => stop(), ms);
+  };
+
   const playRandomMelody = async (onDone: () => void) => {
     const ctx = ensure();
     if (ctx.state === "suspended") await ctx.resume();
 
-    // notas tipo tamagotchi (Hz)
     const melodies: number[][] = [
       [784, 988, 1175, 988, 784, 659, 784],
       [523, 659, 784, 659, 523, 440, 523],
@@ -284,22 +272,19 @@ export default function TamagotchiPage() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // posiciones (como tu código)
   const petX = 2;
   const petY = 48 - PET_H - 1;
   const menuX = 84 - MENU_W;
   const menuY = 2;
 
   const [appState, setAppState] = useState<AppState>("MENU");
-  const [selected, setSelected] = useState<number>(0); // 0..4
+  const [selected, setSelected] = useState<number>(0);
 
   const [curAction, setCurAction] = useState<ActionType>("MUSIC");
 
-  // anim
   const [iconFrame, setIconFrame] = useState<0 | 1>(0);
   const [petFrame, setPetFrame] = useState<0 | 1 | 2 | 3>(0);
 
-  // stats + timers internos
   const petRef = useRef<PetStats>({
     hunger: 100,
     energy: 100,
@@ -310,14 +295,12 @@ export default function TamagotchiPage() {
     lastTickMs: performance.now(),
   });
 
-  // mensaje
   const msgRef = useRef<{ visible: boolean; untilMs: number; idx: number }>({
     visible: false,
     untilMs: 0,
     idx: 0,
   });
 
-  // música “playing”
   const musicRef = useRef<{ playing: boolean }>({ playing: false });
 
   const pickIcon = (): IconType => {
@@ -337,10 +320,8 @@ export default function TamagotchiPage() {
     setAppState("ACTION");
     setPetFrame(0);
 
-    // beep / acción
     if (a === "MUSIC") {
       musicRef.current.playing = true;
-      // inicia melodía y cuando termine vuelve al menú
       await playRandomMelody(() => {
         musicRef.current.playing = false;
         setAppState("MENU");
@@ -356,7 +337,6 @@ export default function TamagotchiPage() {
       beep(220, 120);
     }
 
-    // efecto stats
     const p = petRef.current;
     if (a === "EAT") {
       p.hunger = 100;
@@ -372,7 +352,6 @@ export default function TamagotchiPage() {
     }
   };
 
-  // teclado (LEFT/RIGHT/A/B)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
@@ -394,9 +373,7 @@ export default function TamagotchiPage() {
           e.preventDefault();
         }
       } else {
-        // ACTION
         if (e.key === "Escape" || k === "b" || e.key === "Backspace") {
-          // solo “cancela” música
           songStop();
           musicRef.current.playing = false;
           setAppState("MENU");
@@ -411,7 +388,6 @@ export default function TamagotchiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appState, selected]);
 
-  // tick de pet (deterioro + mensajes)
   useEffect(() => {
     const id = window.setInterval(() => {
       const now = performance.now();
@@ -441,7 +417,6 @@ export default function TamagotchiPage() {
             p.happiness = clampi(p.happiness - 2, 0, 100);
           }
 
-          // mensajes (solo si no hay alerta)
           const m = msgRef.current;
           if (
             !m.visible &&
@@ -460,7 +435,6 @@ export default function TamagotchiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // anim icono + pet frame
   useEffect(() => {
     let alive = true;
 
@@ -479,16 +453,6 @@ export default function TamagotchiPage() {
       if (now - lastPet >= PET_FRAME_MS) {
         lastPet = now;
         setPetFrame((f) => ((f + 1) & 3) as any);
-
-        // si no es música, deja un rato y vuelve menú
-        // (tu Arduino lo hace por loops; acá lo simplifico por tiempo)
-        if (appState === "ACTION" && curAction !== "MUSIC") {
-          // después de ~8 loops aprox (8*250ms = 2s)
-          // cuando llega al frame 0 un par de veces, vuelve
-          // (simple: si ya pasó 2.2s desde entrar, retorna)
-          // lo hago por "ventana" corta:
-          // -> en vez de guardar timestamp, hago un conteo chiquito
-        }
       }
 
       requestAnimationFrame(tick);
@@ -498,16 +462,14 @@ export default function TamagotchiPage() {
     return () => {
       alive = false;
     };
-  }, [appState, curAction]);
+  }, []);
 
-  // auto-salir de acciones no-music (duración)
   useEffect(() => {
     if (appState !== "ACTION") return;
     if (curAction === "MUSIC") return;
 
-    const ms = curAction === "SICK" ? 600 : 2000; // sick corto, otros normal
+    const ms = curAction === "SICK" ? 600 : 2000;
     const id = window.setTimeout(() => {
-      // “sonido conseguido” al final (como tu código)
       if (curAction === "EAT") {
         beep(988, 50);
         window.setTimeout(() => beep(1319, 90), 70);
@@ -531,7 +493,6 @@ export default function TamagotchiPage() {
     return () => window.clearTimeout(id);
   }, [appState, curAction, beep]);
 
-  // render loop (canvas)
   useEffect(() => {
     if (!assets) return;
     const canvas = canvasRef.current;
@@ -555,17 +516,13 @@ export default function TamagotchiPage() {
       }
       lastRender = now;
 
-      // clear
       ctx.clearRect(0, 0, LCD_W, LCD_H);
-      // fondo negro (como lcd)
-      ctx.fillStyle = "#ffffff"; // lcd blanco
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, LCD_W, LCD_H);
 
-      // MENU
       const menuImg = assets[`sel${selected + 1}`];
       if (menuImg) ctx.drawImage(menuImg, menuX, menuY, MENU_W, MENU_H);
 
-      // PET frame
       const frameIdx = (petFrame as number) + 1;
 
       const actionKey = (() => {
@@ -582,7 +539,6 @@ export default function TamagotchiPage() {
       const petImg = assets[`${actionKey}${frameIdx}`];
       if (petImg) ctx.drawImage(petImg, petX, petY, PET_W, PET_H);
 
-      // ICONO estado
       const iconType = pickIcon();
       if (iconType !== "NONE") {
         const iconName =
@@ -598,35 +554,21 @@ export default function TamagotchiPage() {
 
         const ic = assets[iconName];
         if (ic) ctx.drawImage(ic, 0, 0, ICON_W, ICON_H);
-      } else {
-        // “reserva” zona: aquí ya está blanca por el fondo
       }
 
-      // MENSAJE
       const m = msgRef.current;
-      if (hasAlert()) {
-        m.visible = false;
-      }
+      if (hasAlert()) m.visible = false;
+
       if (m.visible && now <= m.untilMs) {
         const text = PET_MESSAGES[m.idx] ?? "";
 
-        // caja
-        const boxX = 0;
-        const boxY = 0;
-        const boxW = 84;
-        const boxH = 10;
-
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.fillRect(0, 0, 84, 10);
 
-        // texto (monoespaciado chiquito)
         ctx.fillStyle = "#000000";
         ctx.font = "8px monospace";
         ctx.textBaseline = "top";
-
-        const x = ICON_W + 1;
-        const y = 1;
-        ctx.fillText(text, x, y);
+        ctx.fillText(text, ICON_W + 1, 1);
       } else if (m.visible && now > m.untilMs) {
         m.visible = false;
       }
@@ -646,9 +588,9 @@ export default function TamagotchiPage() {
         <h3>Error cargando assets</h3>
         <div>{String(error)}</div>
         <div style={{ marginTop: 8 }}>
-          Revisa que existan en <b>{ASSET_BASE}/</b> con nombres exactos (ej:{" "}
+          Confirma que estén en <b>src/assets/</b> y que existan nombres como{" "}
           <code>idle1.png</code>, <code>sel1.png</code>,{" "}
-          <code>foodIcon1.png</code>).
+          <code>foodIcon1.png</code>.
         </div>
       </div>
     );
@@ -662,7 +604,6 @@ export default function TamagotchiPage() {
     );
   }
 
-  // UI simple + canvas escalado
   const p = petRef.current;
 
   return (

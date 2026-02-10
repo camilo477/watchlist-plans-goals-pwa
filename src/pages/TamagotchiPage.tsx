@@ -328,7 +328,6 @@ export default function TamagotchiPage() {
     hygiene: 100,
     health: 100,
     happiness: 100,
-    ageTicks: 0,
   }));
 
   const msgRef = useRef<{ visible: boolean; untilMs: number; idx: number }>({

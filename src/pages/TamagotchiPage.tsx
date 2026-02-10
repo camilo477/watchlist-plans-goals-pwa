@@ -328,6 +328,7 @@ export default function TamagotchiPage() {
     hygiene: 100,
     health: 100,
     happiness: 100,
+    ageTicks: 0,
   }));
 
   const msgRef = useRef<{ visible: boolean; untilMs: number; idx: number }>({
@@ -854,7 +855,6 @@ export default function TamagotchiPage() {
             <StatPill k="Hygiene" v={hud.hygiene} />
             <StatPill k="Health" v={hud.health} />
             <StatPill k="Happy" v={hud.happiness} />
-            <StatPill k="Age" v={hud.ageTicks} />
           </div>
 
           {/* contenedor que define el ancho disponible para escalar */}

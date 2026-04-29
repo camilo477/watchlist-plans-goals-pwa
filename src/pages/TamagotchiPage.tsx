@@ -1021,7 +1021,7 @@ export default function TamagotchiPage() {
               fontSize: 14,
             }}
           >
-            Tamagotchi
+            zanahoria
           </div>
 
           {/* HUD */}

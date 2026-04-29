@@ -5,12 +5,18 @@ import { auth } from "../lib/firebase";
 import { useAuth } from "../auth/AuthProvider";
 
 const USER_TO_EMAIL: Record<string, string> = {
-  camilo: "camilo@prueba.com",
+  camilo: "camilo_vito@yahoo.es",
   diana: "diana@prueba.com",
 };
 
 function normalizeUser(u: string) {
   return u.trim().toLowerCase();
+}
+
+function resolveLoginEmail(value: string) {
+  const normalized = normalizeUser(value);
+  if (normalized.includes("@")) return normalized;
+  return USER_TO_EMAIL[normalized] ?? null;
 }
 
 export default function LoginPage() {
@@ -42,11 +48,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const u = normalizeUser(username);
-      const email = USER_TO_EMAIL[u];
+      const email = resolveLoginEmail(username);
 
       if (!email) {
-        setErr("Usuario no permitido. Usa: camilo o diana.");
+        setErr("Usa camilo, diana o tu correo.");
         return;
       }
 
@@ -79,46 +84,43 @@ export default function LoginPage() {
   }
 
   const input: React.CSSProperties = {
-    padding: 10,
-    borderRadius: 12,
-    border: "1px solid #1f2937",
-    background: "#0b1220",
-    color: "white",
+    padding: "11px 12px",
+    borderRadius: 8,
+    border: "1px solid var(--app-border-strong)",
+    background: "rgba(16,17,15,.72)",
+    color: "var(--app-text)",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
   };
 
   const btn: React.CSSProperties = {
-    padding: 10,
-    borderRadius: 12,
-    border: "1px solid #1f2937",
-    background: "#111827",
-    color: "white",
+    padding: "11px 12px",
+    borderRadius: 8,
+    border: "1px solid rgba(125,211,176,.35)",
+    background: "rgba(125,211,176,.18)",
+    color: "var(--app-text)",
     width: "100%",
     cursor: "pointer",
-    fontWeight: 600,
+    fontWeight: 800,
     opacity: loading || authLoading ? 0.7 : 1,
   };
 
   return (
     <div className="loginWrap">
       <style>{`
-        html, body, #root { height: 100%; background: #0b1220; }
+        html, body, #root { min-height: 100%; }
         body { margin: 0; }
 
-        /* Evita el “descentrado” por la barra del navegador (móvil) */
         .loginWrap{
           min-height: 100vh;
-          min-height: 100svh; /* viewport estable (móvil) */
-          min-height: 100dvh; /* viewport real (móvil) */
+          min-height: 100svh;
+          min-height: 100dvh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #0b1220;
-          color: white;
+          color: var(--app-text);
 
-          /* safe-area (notch) */
           padding-top: max(16px, env(safe-area-inset-top));
           padding-right: max(16px, env(safe-area-inset-right));
           padding-bottom: max(16px, env(safe-area-inset-bottom));
@@ -127,15 +129,15 @@ export default function LoginPage() {
         }
 
         .loginCard{
-          width: min(360px, 100%);
-          padding: 16px;
-          border-radius: 16px;
-          border: 1px solid #1f2937;
-          background: rgba(17, 24, 39, 0.25);
+          width: min(380px, 100%);
+          padding: 20px;
+          border-radius: 10px;
+          border: 1px solid var(--app-border);
+          background: var(--app-surface);
+          box-shadow: var(--app-shadow);
           box-sizing: border-box;
         }
 
-        /* Cuando el teclado abre y queda poco alto, mejor alinear arriba */
         @media (max-height: 520px){
           .loginWrap{
             align-items: flex-start;
@@ -147,16 +149,16 @@ export default function LoginPage() {
       `}</style>
 
       <div className="loginCard">
-        <h2 style={{ marginTop: 0 }}>Iniciar sesión</h2>
-        <p style={{ color: "#cbd5e1", marginTop: 6 }}>
-          Usuario: <b>camilo</b> o <b>diana</b>
+        <h2 style={{ margin: 0 }}>Iniciar sesión</h2>
+        <p style={{ color: "var(--app-muted)", marginTop: 6 }}>
+          Usuario: <b>camilo</b>, <b>diana</b> o tu correo
         </p>
 
         <form onSubmit={onLogin} style={{ display: "grid", gap: 10 }}>
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Usuario (camilo / diana)"
+            placeholder="Usuario o correo"
             style={input}
             autoComplete="username"
             disabled={loading || authLoading}
@@ -177,7 +179,9 @@ export default function LoginPage() {
           </button>
 
           {err ? (
-            <div style={{ color: "#fca5a5", fontSize: 13 }}>{err}</div>
+            <div style={{ color: "var(--app-danger)", fontSize: 13 }}>
+              {err}
+            </div>
           ) : null}
         </form>
       </div>

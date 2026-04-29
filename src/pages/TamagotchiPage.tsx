@@ -769,7 +769,7 @@ export default function TamagotchiPage() {
           ? "rgba(255,255,255,0.06)"
           : "rgba(255,255,255,0.10)",
         color: disabled ? "rgba(255,255,255,0.35)" : "#fff",
-        borderRadius: 14,
+        borderRadius: 8,
         padding: "14px 16px",
         minWidth: 86,
         fontWeight: 800,
@@ -820,13 +820,11 @@ export default function TamagotchiPage() {
   return (
     <div
       style={{
-        minHeight: "100dvh",
-        background: "#0d0f12",
-        padding: 12,
+        padding: 0,
         display: "grid",
         placeItems: "center",
         fontFamily: "system-ui",
-        color: "#eee",
+        color: "var(--app-text)",
         overflowX: "hidden",
       }}
     >
@@ -836,16 +834,18 @@ export default function TamagotchiPage() {
           display: "grid",
           gridTemplateColumns: "1fr",
           gap: 12,
+          padding: "4px 0",
         }}
       >
         <div
           style={{
-            background: "#c33",
-            padding: 12,
-            borderRadius: 18,
-            boxShadow: "0 16px 40px rgba(0,0,0,0.38)",
+            background: "linear-gradient(160deg, #d84b42, #9f2f37)",
+            padding: 14,
+            borderRadius: 10,
+            boxShadow: "var(--app-shadow)",
             display: "grid",
             gap: 10,
+            border: "1px solid rgba(255,255,255,.16)",
           }}
         >
           <div

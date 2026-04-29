@@ -96,16 +96,16 @@ const nameFromEmail = (email?: string | null) =>
 function useStyles() {
   const s = useMemo(() => {
     const card: React.CSSProperties = {
-      border: "1px solid rgba(148,163,184,0.18)",
-      background: "rgba(15,23,42,0.65)",
-      borderRadius: 14,
+      border: "1px solid var(--app-border)",
+      background: "var(--app-surface)",
+      borderRadius: 8,
       padding: 14,
-      boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
+      boxShadow: "0 12px 30px rgba(0,0,0,.18)",
     };
 
     const label: React.CSSProperties = {
       fontSize: 12,
-      color: "#94a3b8",
+      color: "var(--app-muted)",
       display: "block",
       marginBottom: 6,
     };
@@ -116,10 +116,10 @@ function useStyles() {
       display: "block",
       boxSizing: "border-box",
       padding: "10px 12px",
-      borderRadius: 10,
-      border: "1px solid rgba(148,163,184,0.22)",
-      background: "rgba(2,6,23,0.45)",
-      color: "#e2e8f0",
+      borderRadius: 8,
+      border: "1px solid var(--app-border-strong)",
+      background: "rgba(16,17,15,.6)",
+      color: "var(--app-text)",
       outline: "none",
       minWidth: 0,
     };
@@ -137,17 +137,19 @@ function useStyles() {
 
     const btn: React.CSSProperties = {
       padding: "10px 12px",
-      borderRadius: 10,
-      border: "1px solid rgba(148,163,184,0.25)",
-      background: "rgba(30,41,59,0.6)",
-      color: "#e2e8f0",
+      borderRadius: 8,
+      border: "1px solid var(--app-border)",
+      background: "rgba(244,240,232,.06)",
+      color: "var(--app-text)",
       cursor: "pointer",
       whiteSpace: "nowrap",
     };
 
     const btnPrimary: React.CSSProperties = {
       ...btn,
-      background: "rgba(99,102,241,0.35)",
+      border: "1px solid rgba(125,211,176,.34)",
+      background: "rgba(125,211,176,.16)",
+      fontWeight: 800,
     };
 
     const chip: React.CSSProperties = {
@@ -156,16 +158,16 @@ function useStyles() {
       gap: 6,
       padding: "4px 8px",
       borderRadius: 999,
-      border: "1px solid rgba(148,163,184,0.22)",
-      background: "rgba(2,6,23,0.35)",
-      color: "#cbd5e1",
+      border: "1px solid var(--app-border)",
+      background: "rgba(244,240,232,.06)",
+      color: "var(--app-text)",
       fontSize: 12,
       maxWidth: "100%",
     };
 
     const hr: React.CSSProperties = {
       border: 0,
-      borderTop: "1px solid rgba(148,163,184,0.18)",
+      borderTop: "1px solid var(--app-border)",
       margin: "12px 0",
     };
 

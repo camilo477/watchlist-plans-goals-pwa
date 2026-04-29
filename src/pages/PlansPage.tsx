@@ -157,7 +157,6 @@ export default function PlansPage() {
         .page{
           max-width: 1100px;
           margin: 0 auto;
-          padding: 16px;
           display: grid;
           gap: 16px;
         }
@@ -415,26 +414,27 @@ export default function PlansPage() {
 
 /* styles */
 const card: React.CSSProperties = {
-  border: "1px solid rgba(148,163,184,.25)",
-  borderRadius: 12,
-  padding: 12,
-  background: "rgba(15,23,42,.35)",
+  border: "1px solid var(--app-border)",
+  borderRadius: 8,
+  padding: 14,
+  background: "var(--app-surface)",
+  boxShadow: "0 12px 30px rgba(0,0,0,.18)",
 };
 
 const column: React.CSSProperties = {
-  border: "1px solid rgba(148,163,184,.18)",
-  borderRadius: 12,
-  padding: 10,
-  background: "rgba(2,6,23,.35)",
+  border: "1px solid var(--app-border)",
+  borderRadius: 8,
+  padding: 12,
+  background: "rgba(16,17,15,.48)",
   minHeight: 220,
   minWidth: 0, // clave para que no se rompa en grids
 };
 
 const planCard: React.CSSProperties = {
-  border: "1px solid rgba(148,163,184,.18)",
-  borderRadius: 12,
+  border: "1px solid var(--app-border)",
+  borderRadius: 8,
   padding: 10,
-  background: "rgba(15,23,42,.35)",
+  background: "var(--app-surface-2)",
   display: "grid",
   gap: 10,
   minWidth: 0,
@@ -442,10 +442,10 @@ const planCard: React.CSSProperties = {
 
 const input: React.CSSProperties = {
   boxSizing: "border-box",
-  background: "rgba(2,6,23,.35)",
-  border: "1px solid rgba(148,163,184,.25)",
-  color: "#e2e8f0",
-  borderRadius: 10,
+  background: "rgba(16,17,15,.6)",
+  border: "1px solid var(--app-border-strong)",
+  color: "var(--app-text)",
+  borderRadius: 8,
   padding: "10px 10px",
   outline: "none",
   width: "100%",
@@ -453,20 +453,21 @@ const input: React.CSSProperties = {
 };
 
 const primaryBtn: React.CSSProperties = {
-  background: "#2563eb",
-  border: "1px solid rgba(255,255,255,.12)",
-  color: "white",
-  borderRadius: 10,
+  background: "rgba(125,211,176,.16)",
+  border: "1px solid rgba(125,211,176,.34)",
+  color: "var(--app-text)",
+  borderRadius: 8,
   padding: "10px 12px",
   cursor: "pointer",
   minHeight: 40,
+  fontWeight: 800,
 };
 
 const smallBtn: React.CSSProperties = {
-  background: "rgba(148,163,184,.12)",
-  border: "1px solid rgba(148,163,184,.22)",
-  color: "#e2e8f0",
-  borderRadius: 10,
+  background: "rgba(244,240,232,.06)",
+  border: "1px solid var(--app-border)",
+  color: "var(--app-text)",
+  borderRadius: 8,
   padding: "8px 10px",
   cursor: "pointer",
   minHeight: 36,
@@ -475,8 +476,8 @@ const smallBtn: React.CSSProperties = {
 const dangerBtn: React.CSSProperties = {
   background: "rgba(239,68,68,.15)",
   border: "1px solid rgba(239,68,68,.35)",
-  color: "#fecaca",
-  borderRadius: 10,
+  color: "var(--app-danger)",
+  borderRadius: 8,
   padding: "8px 10px",
   cursor: "pointer",
   minHeight: 36,

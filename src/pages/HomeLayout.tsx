@@ -3,14 +3,24 @@ import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
 
 const topLinkStyle = (active: boolean): React.CSSProperties => ({
-  padding: "10px 12px",
-  borderRadius: 999,
+  padding: "9px 12px",
+  borderRadius: 8,
   textDecoration: "none",
-  color: active ? "white" : "#cbd5e1",
-  background: active ? "#0b1220;" : "transparent",
-  border: active ? "1px solid rgba(148,163,184,.25)" : "1px solid transparent",
+  color: active ? "var(--app-text)" : "var(--app-muted)",
+  background: active ? "rgba(125,211,176,.14)" : "transparent",
+  border: active
+    ? "1px solid rgba(125,211,176,.32)"
+    : "1px solid transparent",
   whiteSpace: "nowrap",
 });
+
+const navItems = [
+  { to: "/watchlist", label: "Watchlist", short: "Watch", icon: "L" },
+  { to: "/planes", label: "Planes", short: "Planes", icon: "P" },
+  { to: "/metas", label: "Metas", short: "Metas", icon: "M" },
+  { to: "/ruleta", label: "Ruleta", short: "Ruleta", icon: "R" },
+  { to: "/tamagotchi", label: "Tamagotchi", short: "Tama", icon: "T" },
+];
 
 export default function HomeLayout() {
   const { pathname } = useLocation();
@@ -27,42 +37,26 @@ export default function HomeLayout() {
     <div
       style={{
         width: "100%",
-        maxWidth: 1500,
         margin: "0 auto",
-        padding: 16,
-
-        minHeight: "100vh",
-        background: "#0b1220",
-        color: "white",
+        minHeight: "100dvh",
+        color: "var(--app-text)",
       }}
     >
       <style>{`
-        /* 🔧 Fondo global para evitar “gris” al hacer overscroll */
-        html, body {
-          height: 100%;
-          background: #0b1220;
-        }
-        body {
-          margin: 0;
-          overscroll-behavior-y: none; /* evita el rebote que deja ver el fondo del navegador */
-        }
-        #root {
-          min-height: 100%;
-          background: #0b1220;
-        }
-
         .topbar{
           position: sticky;
           top: 0;
           z-index: 50;
-          background: rgba(11,18,32,.92);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid rgba(31,41,55,1);
+          background: rgba(16,17,15,.88);
+          backdrop-filter: blur(14px);
+          border-bottom: 1px solid var(--app-border);
         }
 
         .topbarInner{
           width: 100%;
-          padding: 12px 12px;
+          max-width: 1260px;
+          margin: 0 auto;
+          padding: 14px 18px 10px;
           display:flex;
           align-items:center;
           justify-content:space-between;
@@ -71,48 +65,61 @@ export default function HomeLayout() {
 
         .brand{
           font-weight: 800;
-          letter-spacing: .2px;
+          letter-spacing: 0;
           line-height: 1;
+          display:flex;
+          align-items:center;
+          gap: 9px;
+        }
+
+        .brandMark{
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          display:grid;
+          place-items:center;
+          color: #111714;
+          background: linear-gradient(135deg, var(--app-accent), var(--app-accent-2));
+          font-size: 13px;
+          font-weight: 900;
+          box-shadow: 0 10px 24px rgba(0,0,0,.28);
         }
 
         .logoutBtn{
-          padding: 9px 12px;
-          border-radius: 12px;
-          border: 1px solid rgba(31,41,55,1);
-          background: rgba(17,24,39,1);
-          color: white;
+          padding: 9px 13px;
+          border-radius: 8px;
+          border: 1px solid var(--app-border);
+          background: var(--app-surface-2);
+          color: var(--app-text);
           cursor: pointer;
           white-space: nowrap;
         }
 
         .main{
-          max-width: 1200px;
+          max-width: 1260px;
           margin: 0 auto;
-          padding: 16px 12px;
-          padding-bottom: 84px; /* espacio para bottom nav en móvil */
+          padding: 22px 18px 92px;
         }
 
-        /* Top nav (solo desktop/tablet) */
         .topNav{
-          max-width: 1200px;
+          max-width: 1260px;
           margin: 0 auto;
-          padding: 10px 12px 12px;
+          padding: 0 18px 12px;
           display:flex;
           gap: 8px;
           flex-wrap: wrap;
         }
 
-        /* Bottom nav (solo móvil) */
         .bottomNav{
           position: fixed;
           left: 0;
           right: 0;
           bottom: 0;
           z-index: 60;
-          padding: 10px 10px 12px;
-          background: rgba(11,18,32,.92);
-          backdrop-filter: blur(10px);
-          border-top: 1px solid rgba(31,41,55,1);
+          padding: 8px 10px max(10px, env(safe-area-inset-bottom));
+          background: rgba(16,17,15,.9);
+          backdrop-filter: blur(16px);
+          border-top: 1px solid var(--app-border);
         }
 
         .bottomNavInner{
@@ -128,65 +135,65 @@ export default function HomeLayout() {
           flex-direction: column;
           align-items:center;
           justify-content:center;
-          gap: 4px;
+          gap: 5px;
           text-decoration:none;
-          border-radius: 14px;
-          padding: 10px 8px;
-          border: 1px solid rgba(148,163,184,.14);
-          background: rgba(15,23,42,.35);
-          color: #cbd5e1;
-          font-size: 12px;
+          border-radius: 8px;
+          padding: 9px 4px;
+          border: 1px solid transparent;
+          color: var(--app-muted);
+          font-size: 11px;
           line-height: 1;
+          min-width: 0;
         }
 
         .bItemActive{
-          background: rgba(51,65,85,.9);
-          border-color: rgba(148,163,184,.25);
-          color: white;
+          background: rgba(125,211,176,.14);
+          border-color: rgba(125,211,176,.28);
+          color: var(--app-text);
         }
 
         .bIcon{
-          font-size: 16px;
+          width: 23px;
+          height: 23px;
+          border-radius: 7px;
+          display:grid;
+          place-items:center;
+          background: rgba(244,240,232,.08);
+          color: var(--app-accent);
+          font-size: 11px;
+          font-weight: 900;
           line-height: 1;
         }
 
-        /* Mostrar topNav en pantallas grandes */
         @media (min-width: 800px){
-          .main{ padding-bottom: 16px; }
+          .main{ padding-bottom: 24px; }
           .bottomNav{ display: none; }
         }
 
-        /* Ocultar topNav en móvil */
         @media (max-width: 799px){
           .topNav{ display: none; }
+          .topbarInner{ padding: 12px 14px; }
+          .main{ padding: 16px 12px 92px; }
         }
       `}</style>
 
       <header className="topbar">
         <div className="topbarInner">
-          <div className="brand">DianiMilo</div>
+          <div className="brand">
+            <span className="brandMark">DM</span>
+            <span>DianiMilo</span>
+          </div>
           <button onClick={logout} className="logoutBtn">
             Salir
           </button>
         </div>
 
-        {/* Top nav para desktop/tablet */}
         <nav className="topNav">
-          <Link to="/watchlist" style={topLinkStyle(is("/watchlist"))}>
-            Watchlist
-          </Link>
-          <Link to="/planes" style={topLinkStyle(is("/planes"))}>
-            Planes
-          </Link>
-          <Link to="/metas" style={topLinkStyle(is("/metas"))}>
-            Metas
-          </Link>
-          <Link to="/ruleta" style={topLinkStyle(is("/ruleta"))}>
-            Ruleta
-          </Link>
-          <Link to="/tamagotchi" style={topLinkStyle(is("/tamagotchi"))}>
-            Tamagotchi
-          </Link>
+          {navItems.map((item) => (
+            <Link key={item.to} to={item.to} style={topLinkStyle(is(item.to))}>
+              {item.label}
+            </Link>
+          ))}
         </nav>
       </header>
 
@@ -194,44 +201,18 @@ export default function HomeLayout() {
         <Outlet />
       </main>
 
-      {/* Bottom nav para móvil */}
       <div className="bottomNav">
         <div className="bottomNavInner">
-          <Link
-            to="/watchlist"
-            className={`bItem ${is("/watchlist") ? "bItemActive" : ""}`}
-          >
-            <span className="bIcon"></span>
-            Watchlist
-          </Link>
-          <Link
-            to="/planes"
-            className={`bItem ${is("/planes") ? "bItemActive" : ""}`}
-          >
-            <span className="bIcon"></span>
-            Planes
-          </Link>
-          <Link
-            to="/metas"
-            className={`bItem ${is("/metas") ? "bItemActive" : ""}`}
-          >
-            <span className="bIcon"></span>
-            Metas
-          </Link>
-          <Link
-            to="/ruleta"
-            className={`bItem ${is("/ruleta") ? "bItemActive" : ""}`}
-          >
-            <span className="bIcon"></span>
-            Ruleta
-          </Link>
-          <Link
-            to="/tamagotchi"
-            className={`bItem ${is("/tamagotchi") ? "bItemActive" : ""}`}
-          >
-            <span className="bIcon"></span>
-            Tama
-          </Link>
+          {navItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`bItem ${is(item.to) ? "bItemActive" : ""}`}
+            >
+              <span className="bIcon">{item.icon}</span>
+              {item.short}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

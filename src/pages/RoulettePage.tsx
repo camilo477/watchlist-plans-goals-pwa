@@ -239,10 +239,10 @@ export default function RoulettePage() {
   }
 
   return (
-    <div style={{ display: "grid", gap: 14 }}>
+    <div style={{ display: "grid", gap: 16 }}>
       <header>
         <h2 style={{ margin: 0 }}>Ruleta</h2>
-        <p style={{ color: "#cbd5e1", marginTop: 6 }}>
+        <p style={{ color: "var(--app-muted)", marginTop: 6 }}>
           Elige al azar un plan o algo para ver
         </p>
       </header>
@@ -297,8 +297,8 @@ export default function RoulettePage() {
             Incluir hechos/vistos
           </label>
 
-          <div style={{ marginLeft: "auto", color: "#94a3b8", fontSize: 13 }}>
-            Pool: <strong style={{ color: "#e2e8f0" }}>{pool.length}</strong>{" "}
+          <div style={{ marginLeft: "auto", color: "var(--app-muted)", fontSize: 13 }}>
+            Pool: <strong style={{ color: "var(--app-text)" }}>{pool.length}</strong>{" "}
             (Planes {planCandidates.length} • Watchlist {watchCandidates.length}
             )
           </div>
@@ -394,32 +394,33 @@ export default function RoulettePage() {
 
 /* styles */
 const card: React.CSSProperties = {
-  border: "1px solid rgba(148,163,184,.25)",
-  borderRadius: 14,
-  padding: 12,
-  background: "rgba(15,23,42,.35)",
+  border: "1px solid var(--app-border)",
+  borderRadius: 8,
+  padding: 14,
+  background: "var(--app-surface)",
+  boxShadow: "0 12px 30px rgba(0,0,0,.18)",
 };
 
 const pill: React.CSSProperties = {
   padding: "8px 12px",
-  borderRadius: 999,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(148,163,184,.08)",
-  color: "#e2e8f0",
+  borderRadius: 8,
+  border: "1px solid var(--app-border)",
+  background: "rgba(244,240,232,.06)",
+  color: "var(--app-text)",
   cursor: "pointer",
 };
 
 const pillActive: React.CSSProperties = {
   ...pill,
-  border: "1px solid rgba(56,189,248,.45)",
-  background: "rgba(56,189,248,.14)",
+  border: "1px solid rgba(125,211,176,.36)",
+  background: "rgba(125,211,176,.14)",
 };
 
 const stage: React.CSSProperties = {
-  border: "1px dashed rgba(148,163,184,.25)",
-  borderRadius: 14,
-  padding: 14,
-  background: "rgba(2,6,23,.25)",
+  border: "1px dashed var(--app-border-strong)",
+  borderRadius: 8,
+  padding: 16,
+  background: "rgba(16,17,15,.48)",
   minHeight: 120,
   display: "flex",
   alignItems: "center",
@@ -429,29 +430,29 @@ const stage: React.CSSProperties = {
 const poster: React.CSSProperties = {
   width: 64,
   height: 96,
-  borderRadius: 12,
+  borderRadius: 8,
   objectFit: "cover",
-  background: "rgba(148,163,184,.08)",
-  border: "1px solid rgba(148,163,184,.18)",
+  background: "rgba(244,240,232,.06)",
+  border: "1px solid var(--app-border)",
 };
 
 const planIcon: React.CSSProperties = {
   width: 64,
   height: 96,
-  borderRadius: 12,
+  borderRadius: 8,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: "rgba(148,163,184,.08)",
-  border: "1px solid rgba(148,163,184,.18)",
+  background: "rgba(244,240,232,.06)",
+  border: "1px solid var(--app-border)",
 };
 
 const bigBtn: React.CSSProperties = {
   padding: "12px 18px",
-  borderRadius: 12,
-  border: "1px solid rgba(56,189,248,.35)",
-  background: "rgba(56,189,248,.16)",
-  color: "#e2e8f0",
+  borderRadius: 8,
+  border: "1px solid rgba(125,211,176,.36)",
+  background: "rgba(125,211,176,.16)",
+  color: "var(--app-text)",
   cursor: "pointer",
   fontWeight: 800,
   minWidth: 160,
@@ -459,28 +460,28 @@ const bigBtn: React.CSSProperties = {
 
 const disabledBigBtn: React.CSSProperties = {
   ...bigBtn,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(148,163,184,.08)",
-  color: "#94a3b8",
+  border: "1px solid var(--app-border)",
+  background: "rgba(244,240,232,.05)",
+  color: "var(--app-dim)",
   cursor: "not-allowed",
 };
 
 const primaryBtn: React.CSSProperties = {
   padding: "10px 12px",
-  borderRadius: 10,
-  border: "1px solid rgba(255,255,255,.12)",
-  background: "#2563eb",
-  color: "white",
+  borderRadius: 8,
+  border: "1px solid rgba(125,211,176,.34)",
+  background: "rgba(125,211,176,.16)",
+  color: "var(--app-text)",
   cursor: "pointer",
   fontWeight: 700,
 };
 
 const smallBtn: React.CSSProperties = {
   padding: "10px 12px",
-  borderRadius: 10,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(148,163,184,.08)",
-  color: "#e2e8f0",
+  borderRadius: 8,
+  border: "1px solid var(--app-border)",
+  background: "rgba(244,240,232,.06)",
+  color: "var(--app-text)",
   cursor: "pointer",
 };
 
@@ -488,7 +489,7 @@ const winBox: React.CSSProperties = {
   marginTop: 6,
   border: "1px solid rgba(34,197,94,.35)",
   background: "rgba(34,197,94,.10)",
-  borderRadius: 12,
+  borderRadius: 8,
   padding: 12,
   display: "grid",
   gap: 10,

@@ -246,9 +246,8 @@ export default function WatchlistPage() {
   .wlPage{
     max-width: 1500px;
     margin: 0 auto;
-    padding: 18px;
     display: grid;
-    gap: 14px;
+    gap: 16px;
   }
 
   /* ✅ PC: 4 columnas */
@@ -337,8 +336,7 @@ export default function WatchlistPage() {
 `}</style>
 
       <div>
-        <h2 style={{ margin: 0 }}>Watchlist</h2>
-        <p style={{ color: "#cbd5e1", marginTop: 6 }}></p>
+        <h2 style={{ margin: 0, letterSpacing: 0 }}>Watchlist</h2>
       </div>
 
       <div className="wlGrid">
@@ -772,10 +770,11 @@ function ItemRow({
 
 /* styles */
 const card: React.CSSProperties = {
-  border: "2px solid rgba(148,163,184,.2)",
-  borderRadius: 14,
+  border: "1px solid var(--app-border)",
+  borderRadius: 8,
   padding: 14,
-  background: "rgba(2,6,23,.35)",
+  background: "var(--app-surface)",
+  boxShadow: "0 12px 30px rgba(0,0,0,.18)",
   minWidth: 0,
 };
 
@@ -784,17 +783,17 @@ const cardHeader: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "space-between",
   paddingBottom: 10,
-  borderBottom: "1px solid rgba(148,163,184,.15)",
+  borderBottom: "1px solid var(--app-border)",
   marginBottom: 12,
 };
 
 const input: React.CSSProperties = {
   width: "100%",
   padding: "10px 12px",
-  borderRadius: 10,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(15,23,42,.35)",
-  color: "#e2e8f0",
+  borderRadius: 8,
+  border: "1px solid var(--app-border-strong)",
+  background: "rgba(16,17,15,.6)",
+  color: "var(--app-text)",
   outline: "none",
   fontSize: 16,
   boxSizing: "border-box",
@@ -802,29 +801,30 @@ const input: React.CSSProperties = {
 
 const primaryBtn: React.CSSProperties = {
   padding: "10px 12px",
-  borderRadius: 10,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(56,189,248,.15)",
-  color: "#e2e8f0",
+  borderRadius: 8,
+  border: "1px solid rgba(125,211,176,.34)",
+  background: "rgba(125,211,176,.16)",
+  color: "var(--app-text)",
   cursor: "pointer",
   minHeight: 40,
+  fontWeight: 800,
 };
 
 const emptyBox: React.CSSProperties = {
-  border: "1px dashed rgba(148,163,184,.25)",
-  borderRadius: 12,
+  border: "1px dashed var(--app-border-strong)",
+  borderRadius: 8,
   padding: 14,
-  color: "#94a3b8",
-  background: "rgba(15,23,42,.15)",
+  color: "var(--app-muted)",
+  background: "rgba(244,240,232,.04)",
 };
 
 const errorBox: React.CSSProperties = {
   marginTop: 12,
   border: "1px solid rgba(248,113,113,.35)",
   background: "rgba(248,113,113,.10)",
-  borderRadius: 12,
+  borderRadius: 8,
   padding: 12,
-  color: "#fecaca",
+  color: "var(--app-danger)",
   fontSize: 13,
 };
 
@@ -841,10 +841,12 @@ const rowBtn = (active: boolean): React.CSSProperties => ({
   gap: 10,
   alignItems: "center",
   padding: 10,
-  borderRadius: 12,
-  border: "1px solid rgba(148,163,184,.2)",
-  background: active ? "rgba(56,189,248,.12)" : "rgba(15,23,42,.25)",
-  color: "#e2e8f0",
+  borderRadius: 8,
+  border: active
+    ? "1px solid rgba(125,211,176,.32)"
+    : "1px solid var(--app-border)",
+  background: active ? "rgba(125,211,176,.12)" : "var(--app-surface-2)",
+  color: "var(--app-text)",
   cursor: "pointer",
   width: "100%",
   minWidth: 0,
@@ -853,20 +855,20 @@ const rowBtn = (active: boolean): React.CSSProperties => ({
 const miniBtn: React.CSSProperties = {
   height: 34,
   padding: "0 10px",
-  borderRadius: 10,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(148,163,184,.08)",
-  color: "#e2e8f0",
+  borderRadius: 8,
+  border: "1px solid var(--app-border)",
+  background: "rgba(244,240,232,.06)",
+  color: "var(--app-text)",
   cursor: "pointer",
 };
 
 const dangerBtn: React.CSSProperties = {
   height: 34,
   padding: "0 10px",
-  borderRadius: 10,
+  borderRadius: 8,
   border: "1px solid rgba(248,113,113,.35)",
   background: "rgba(248,113,113,.12)",
-  color: "#fecaca",
+  color: "var(--app-danger)",
   cursor: "pointer",
 };
 
@@ -875,10 +877,10 @@ const resultRow: React.CSSProperties = {
   gridTemplateColumns: "1fr auto",
   gap: 10,
   alignItems: "center",
-  border: "1px solid rgba(148,163,184,.15)",
-  borderRadius: 12,
+  border: "1px solid var(--app-border)",
+  borderRadius: 8,
   padding: 10,
-  background: "rgba(15,23,42,.18)",
+  background: "var(--app-surface-2)",
   minWidth: 0,
 };
 
@@ -888,7 +890,7 @@ const resultBtn: React.CSSProperties = {
   alignItems: "center",
   border: "none",
   background: "transparent",
-  color: "#e2e8f0",
+  color: "var(--app-text)",
   cursor: "pointer",
   textAlign: "left",
   minWidth: 0,
@@ -897,28 +899,28 @@ const resultBtn: React.CSSProperties = {
 const addBtn: React.CSSProperties = {
   height: 34,
   padding: "0 10px",
-  borderRadius: 10,
-  border: "1px solid rgba(34,197,94,.35)",
-  background: "rgba(34,197,94,.12)",
-  color: "#bbf7d0",
+  borderRadius: 8,
+  border: "1px solid rgba(125,211,176,.36)",
+  background: "rgba(125,211,176,.14)",
+  color: "var(--app-text)",
   cursor: "pointer",
 };
 
 const disabledBtn: React.CSSProperties = {
   height: 34,
   padding: "0 10px",
-  borderRadius: 10,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(148,163,184,.08)",
-  color: "#94a3b8",
+  borderRadius: 8,
+  border: "1px solid var(--app-border)",
+  background: "rgba(244,240,232,.05)",
+  color: "var(--app-dim)",
   cursor: "not-allowed",
 };
 
 const chip: React.CSSProperties = {
   padding: "4px 10px",
   borderRadius: 999,
-  border: "1px solid rgba(148,163,184,.25)",
-  background: "rgba(148,163,184,.08)",
-  color: "#e2e8f0",
+  border: "1px solid var(--app-border)",
+  background: "rgba(244,240,232,.06)",
+  color: "var(--app-text)",
   fontSize: 12,
 };

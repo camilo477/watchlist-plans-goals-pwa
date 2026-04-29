@@ -1,5 +1,34 @@
 # React + TypeScript + Vite
 
+## Docker
+
+La app se puede construir como una imagen Docker que sirve el build de Vite con
+Nginx. Para correrla en una Raspberry o servidor propio:
+
+```bash
+docker build \
+  --build-arg VITE_BASE_PATH="/" \
+  --build-arg VITE_FIREBASE_API_KEY="..." \
+  --build-arg VITE_FIREBASE_AUTH_DOMAIN="..." \
+  --build-arg VITE_FIREBASE_PROJECT_ID="..." \
+  --build-arg VITE_FIREBASE_STORAGE_BUCKET="..." \
+  --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID="..." \
+  --build-arg VITE_FIREBASE_APP_ID="..." \
+  --build-arg VITE_TMDB_API_KEY="..." \
+  -t app-diamilo .
+```
+
+```bash
+docker run -d \
+  --name app-diamilo \
+  --restart unless-stopped \
+  -p 3001:80 \
+  app-diamilo
+```
+
+Luego el reverse proxy local puede apuntar `dianimilo.tudominio.com` a
+`http://localhost:3001`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

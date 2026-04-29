@@ -20,6 +20,7 @@ import {
   type TmdbSearchItem,
 } from "../lib/tmdb";
 import { useAuth } from "../auth/AuthProvider";
+import { nameFromEmail } from "../lib/userNames";
 
 type Status = "pending" | "watching" | "done";
 
@@ -47,9 +48,6 @@ type WatchItem = {
 
 const img = (path?: string | null) =>
   path ? `https://image.tmdb.org/t/p/w342${path}` : null;
-
-const nameFromEmail = (email?: string | null) =>
-  email ? email.split("@")[0] : null;
 
 export default function WatchlistPage() {
   const { user, loading: authLoading } = useAuth();

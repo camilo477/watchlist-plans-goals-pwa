@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../auth/AuthProvider";
+import { nameFromEmail } from "../lib/userNames";
 
 type PlanStatus = "idea" | "planned" | "done";
 
@@ -40,9 +41,6 @@ const STATUS: { key: PlanStatus; label: string }[] = [
   { key: "planned", label: "Planeado" },
   { key: "done", label: "Hecho" },
 ];
-
-const nameFromEmail = (email?: string | null) =>
-  email ? email.split("@")[0] : null;
 
 export default function PlansPage() {
   const { user, loading: authLoading } = useAuth();

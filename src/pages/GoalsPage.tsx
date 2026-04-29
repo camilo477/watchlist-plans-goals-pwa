@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../auth/AuthProvider";
+import { nameFromEmail } from "../lib/userNames";
 
 type GoalStatus = "active" | "done" | "paused";
 type Priority = "low" | "medium" | "high";
@@ -89,9 +90,6 @@ function progressLines(progress: GoalProgress): string[] {
   if (lines.length === 0) lines.push("Sin progreso configurado");
   return lines;
 }
-
-const nameFromEmail = (email?: string | null) =>
-  email ? email.split("@")[0] : null;
 
 function useStyles() {
   const s = useMemo(() => {

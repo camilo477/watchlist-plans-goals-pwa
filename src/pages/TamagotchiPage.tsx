@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { doc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
+import { useAuth } from "../auth/AuthProvider";
+import { db } from "../lib/firebase";
 
 type AppState = "MENU" | "ACTION";
 type ActionType = "MUSIC" | "SLEEP" | "EAT" | "BATH" | "SICK";
@@ -40,8 +43,9 @@ const TH_ENERGY = 25;
 const TH_HYGIENE = 25;
 const TH_HAPPY = 40;
 
-const DEBUG_SPEEDUP = import.meta.env.DEV;
-const PET_TICK_MS = DEBUG_SPEEDUP ? 5000 : 60000;
+const PET_DOC_ID = "shared";
+const PET_TICK_MS = 5 * 60 * 1000;
+const PET_SAVE_DEBOUNCE_MS = 700;
 
 const ICON_FRAME_MS = 350;
 const PET_FRAME_MS = 250;
@@ -93,6 +97,78 @@ const PET_MESSAGES = [
   "Yo te cuido",
   "Te adoro",
 ];
+
+function createDefaultPetStats(now = Date.now()): PetStats {
+  return {
+    hunger: 100,
+    energy: 100,
+    hygiene: 100,
+    health: 100,
+    happiness: 100,
+    ageTicks: 0,
+    lastTickMs: now,
+  };
+}
+
+function readNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizePetStats(value: unknown): PetStats {
+  const data = value && typeof value === "object" ? (value as Partial<PetStats>) : {};
+  const fallback = createDefaultPetStats();
+
+  return {
+    hunger: clampi(Math.round(readNumber(data.hunger, fallback.hunger)), 0, 100),
+    energy: clampi(Math.round(readNumber(data.energy, fallback.energy)), 0, 100),
+    hygiene: clampi(Math.round(readNumber(data.hygiene, fallback.hygiene)), 0, 100),
+    health: clampi(Math.round(readNumber(data.health, fallback.health)), 0, 100),
+    happiness: clampi(
+      Math.round(readNumber(data.happiness, fallback.happiness)),
+      0,
+      100,
+    ),
+    ageTicks: Math.max(0, Math.round(readNumber(data.ageTicks, 0))),
+    lastTickMs: readNumber(data.lastTickMs, fallback.lastTickMs),
+  };
+}
+
+function applyPetDecay(p: PetStats, now = Date.now()) {
+  let changed = false;
+
+  while (now - p.lastTickMs >= PET_TICK_MS) {
+    p.lastTickMs += PET_TICK_MS;
+    p.ageTicks++;
+    changed = true;
+
+    p.hunger = clampi(p.hunger - 5, 0, 100);
+    p.energy = clampi(p.energy - 3, 0, 100);
+    p.hygiene = clampi(p.hygiene - 4, 0, 100);
+    p.happiness = clampi(p.happiness - 3, 0, 100);
+
+    const careScore = (p.hunger + p.energy + p.hygiene + p.happiness) / 4;
+    let healthLoss = 0;
+
+    if (careScore <= 75) healthLoss = 1;
+    if (careScore <= 60) healthLoss = 2;
+    if (careScore <= 45) healthLoss = 3;
+    if (careScore <= 30) healthLoss = 4;
+
+    if (p.hunger <= 20) healthLoss += 1;
+    if (p.hygiene <= 20) healthLoss += 1;
+    if (p.energy <= 15) healthLoss += 1;
+
+    if (healthLoss > 0) {
+      p.health = clampi(p.health - healthLoss, 0, 100);
+    }
+
+    if (p.hunger <= 25) p.happiness = clampi(p.happiness - 2, 0, 100);
+    if (p.energy <= 20) p.happiness = clampi(p.happiness - 2, 0, 100);
+    if (p.health <= 30) p.happiness = clampi(p.happiness - 3, 0, 100);
+  }
+
+  return changed;
+}
 
 function assetUrl(fileName: string) {
   return new URL(`../assets/${fileName}`, import.meta.url).toString();
@@ -299,8 +375,10 @@ function useElementWidth<T extends HTMLElement>(
 }
 
 export default function TamagotchiPage() {
+  const { user } = useAuth();
   const { assets, error } = useAssets();
   const { beep, stop: songStop, playRandomMelody } = useAudio();
+  const petDocRef = useMemo(() => doc(db, "tamagotchi", PET_DOC_ID), []);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lcdWrapRef = useRef<HTMLDivElement | null>(null);
@@ -318,15 +396,9 @@ export default function TamagotchiPage() {
   const [petFrame, setPetFrame] = useState<0 | 1 | 2 | 3>(0);
   const [messageText, setMessageText] = useState("");
 
-  const petRef = useRef<PetStats>({
-    hunger: 100,
-    energy: 100,
-    hygiene: 100,
-    health: 100,
-    happiness: 100,
-    ageTicks: 0,
-    lastTickMs: performance.now(),
-  });
+  const petRef = useRef<PetStats>(createDefaultPetStats());
+  const saveTimerRef = useRef<number | null>(null);
+  const hydratedRef = useRef(false);
 
   // HUD UI (para texto arriba)
   const [hud, setHud] = useState(() => ({
@@ -389,6 +461,84 @@ export default function TamagotchiPage() {
     m.untilMs = performance.now() + MSG_DURATION_MS;
     setMessageText(text);
   }, []);
+
+  const refreshHud = useCallback(() => {
+    const p = petRef.current;
+    setHud({
+      hunger: p.hunger,
+      energy: p.energy,
+      hygiene: p.hygiene,
+      health: p.health,
+      happiness: p.happiness,
+      ageTicks: p.ageTicks,
+    });
+  }, []);
+
+  const savePetNow = useCallback(async () => {
+    if (!user) return;
+
+    const p = petRef.current;
+    await setDoc(
+      petDocRef,
+      {
+        hunger: p.hunger,
+        energy: p.energy,
+        hygiene: p.hygiene,
+        health: p.health,
+        happiness: p.happiness,
+        ageTicks: p.ageTicks,
+        lastTickMs: p.lastTickMs,
+        updatedAt: serverTimestamp(),
+        updatedByUid: user.uid,
+        updatedByEmail: user.email ?? null,
+      },
+      { merge: true },
+    );
+  }, [petDocRef, user]);
+
+  const scheduleSavePet = useCallback(() => {
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = window.setTimeout(() => {
+      saveTimerRef.current = null;
+      savePetNow().catch((err) => {
+        console.warn("tamagotchi save error:", err);
+      });
+    }, PET_SAVE_DEBOUNCE_MS);
+  }, [savePetNow]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const unsub = onSnapshot(
+      petDocRef,
+      (snap) => {
+        const next = snap.exists()
+          ? normalizePetStats(snap.data())
+          : createDefaultPetStats();
+
+        const changedByElapsedTime = applyPetDecay(next);
+        petRef.current = next;
+        hydratedRef.current = true;
+        refreshHud();
+
+        if (!snap.exists() || changedByElapsedTime) {
+          scheduleSavePet();
+        }
+      },
+      (err) => {
+        console.warn("tamagotchi snapshot error:", err);
+        hydratedRef.current = true;
+      },
+    );
+
+    return () => unsub();
+  }, [petDocRef, refreshHud, scheduleSavePet, user]);
 
   const finishAction = useCallback(
     (a: ActionType) => {
@@ -477,6 +627,8 @@ export default function TamagotchiPage() {
     } else if (a === "MUSIC") {
       p.happiness = 100;
     }
+    refreshHud();
+    scheduleSavePet();
   };
 
   // teclado
@@ -508,64 +660,34 @@ export default function TamagotchiPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appState, selected, showMessage]);
 
-  // tick stats + consola + HUD
+  // tick stats + HUD
   useEffect(() => {
     const id = window.setInterval(() => {
-      const now = performance.now();
+      if (!hydratedRef.current) return;
+
+      const now = Date.now();
       const p = petRef.current;
 
-      if (now - p.lastTickMs >= PET_TICK_MS) {
-        while (now - p.lastTickMs >= PET_TICK_MS) {
-          p.lastTickMs += PET_TICK_MS;
-          p.ageTicks++;
-
-          p.hunger = clampi(p.hunger - 2, 0, 100);
-          p.energy = clampi(p.energy - 1, 0, 100);
-          p.hygiene = clampi(p.hygiene - 1, 0, 100);
-          p.happiness = clampi(p.happiness - 1, 0, 100);
-
-          if (p.hunger <= 80) {
-            p.health = clampi(p.health - 2, 0, 100);
-            p.happiness = clampi(p.happiness - 1, 0, 100);
-          }
-          if (p.energy <= 20) p.happiness = clampi(p.happiness - 1, 0, 100);
-          if (p.hygiene <= 20) p.health = clampi(p.health - 1, 0, 100);
-          if (p.health <= 30) p.happiness = clampi(p.happiness - 2, 0, 100);
-
-          if (import.meta.env.DEV) {
-            console.log(
-              `[PET] tick ageTicks=${p.ageTicks} hunger=${p.hunger} energy=${p.energy} hygiene=${p.hygiene} health=${p.health} happy=${p.happiness}`,
-            );
-          }
-
-          const m = msgRef.current;
-          if (
-            !m.visible &&
-            !hasAlert() &&
-            Math.random() * 100 < MSG_CHANCE_PCT
-          ) {
-            m.idx = Math.floor(Math.random() * PET_MESSAGES.length);
-            m.visible = true;
-            m.untilMs = performance.now() + MSG_DURATION_MS;
-            setMessageText(PET_MESSAGES[m.idx] ?? "");
-          }
+      if (applyPetDecay(p, now)) {
+        const m = msgRef.current;
+        if (
+          !m.visible &&
+          !hasAlert() &&
+          Math.random() * 100 < MSG_CHANCE_PCT
+        ) {
+          m.idx = Math.floor(Math.random() * PET_MESSAGES.length);
+          m.visible = true;
+          m.untilMs = performance.now() + MSG_DURATION_MS;
+          setMessageText(PET_MESSAGES[m.idx] ?? "");
         }
+        scheduleSavePet();
       }
 
-      // HUD refresco suave
-      setHud({
-        hunger: p.hunger,
-        energy: p.energy,
-        hygiene: p.hygiene,
-        health: p.health,
-        happiness: p.happiness,
-        ageTicks: p.ageTicks,
-      });
-    }, 120);
+      refreshHud();
+    }, 60 * 1000);
 
     return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasAlert, refreshHud, scheduleSavePet]);
 
   // anim frames (pet + icon)
   useEffect(() => {

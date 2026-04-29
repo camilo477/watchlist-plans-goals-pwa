@@ -125,14 +125,31 @@ function getErrorMessage(error: unknown) {
 }
 
 function normalizePetStats(value: unknown): PetStats {
-  const data = value && typeof value === "object" ? (value as Partial<PetStats>) : {};
+  const data =
+    value && typeof value === "object" ? (value as Partial<PetStats>) : {};
   const fallback = createDefaultPetStats();
 
   return {
-    hunger: clampi(Math.round(readNumber(data.hunger, fallback.hunger)), 0, 100),
-    energy: clampi(Math.round(readNumber(data.energy, fallback.energy)), 0, 100),
-    hygiene: clampi(Math.round(readNumber(data.hygiene, fallback.hygiene)), 0, 100),
-    health: clampi(Math.round(readNumber(data.health, fallback.health)), 0, 100),
+    hunger: clampi(
+      Math.round(readNumber(data.hunger, fallback.hunger)),
+      0,
+      100,
+    ),
+    energy: clampi(
+      Math.round(readNumber(data.energy, fallback.energy)),
+      0,
+      100,
+    ),
+    hygiene: clampi(
+      Math.round(readNumber(data.hygiene, fallback.hygiene)),
+      0,
+      100,
+    ),
+    health: clampi(
+      Math.round(readNumber(data.health, fallback.health)),
+      0,
+      100,
+    ),
     happiness: clampi(
       Math.round(readNumber(data.happiness, fallback.happiness)),
       0,
@@ -510,7 +527,6 @@ export default function TamagotchiPage() {
 
   const scheduleSavePet = useCallback(() => {
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
-    setSyncMessage("Guardando en Firebase...");
     setSyncError(null);
     saveTimerRef.current = window.setTimeout(() => {
       saveTimerRef.current = null;
@@ -695,11 +711,7 @@ export default function TamagotchiPage() {
 
       if (applyPetDecay(p, now)) {
         const m = msgRef.current;
-        if (
-          !m.visible &&
-          !hasAlert() &&
-          Math.random() * 100 < MSG_CHANCE_PCT
-        ) {
+        if (!m.visible && !hasAlert() && Math.random() * 100 < MSG_CHANCE_PCT) {
           m.idx = Math.floor(Math.random() * PET_MESSAGES.length);
           m.visible = true;
           m.untilMs = performance.now() + MSG_DURATION_MS;

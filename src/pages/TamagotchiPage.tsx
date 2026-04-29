@@ -532,7 +532,6 @@ export default function TamagotchiPage() {
       saveTimerRef.current = null;
       savePetNow()
         .then(() => {
-          setSyncMessage("Guardado en Firebase");
           setSyncError(null);
         })
         .catch((err) => {

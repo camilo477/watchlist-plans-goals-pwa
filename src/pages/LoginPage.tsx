@@ -6,7 +6,7 @@ import { useAuth } from "../auth/AuthProvider";
 
 const USER_TO_EMAIL: Record<string, string> = {
   camilo: "camilo_vito@yahoo.es",
-  diana: "diana@prueba.com",
+  diana: "dianaquiroga03@hotmail.com",
 };
 
 function normalizeUser(u: string) {

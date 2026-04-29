@@ -2,6 +2,7 @@ const EMAIL_TO_NAME: Record<string, string> = {
   "camilo_vito@yahoo.es": "camilo",
   "camilo@prueba.com": "camilo",
   "diana@prueba.com": "diana",
+  "dianaquiroga03@hotmail.com": "diana",
 };
 
 export function nameFromEmail(email?: string | null) {

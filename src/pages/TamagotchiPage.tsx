@@ -316,6 +316,7 @@ export default function TamagotchiPage() {
   const [curAction, setCurAction] = useState<ActionType>("MUSIC");
   const [iconFrame, setIconFrame] = useState<0 | 1>(0);
   const [petFrame, setPetFrame] = useState<0 | 1 | 2 | 3>(0);
+  const [messageText, setMessageText] = useState("");
 
   const petRef = useRef<PetStats>({
     hunger: 100,
@@ -380,6 +381,14 @@ export default function TamagotchiPage() {
   const hasAlert = useCallback(() => pickIcon() !== "NONE", [pickIcon]);
 
   const actionMap: ActionType[] = ["MUSIC", "SLEEP", "EAT", "BATH", "SICK"];
+
+  const showMessage = useCallback((text: string) => {
+    const m = msgRef.current;
+    m.idx = 0;
+    m.visible = true;
+    m.untilMs = performance.now() + MSG_DURATION_MS;
+    setMessageText(text);
+  }, []);
 
   const finishAction = useCallback(
     (a: ActionType) => {
@@ -497,7 +506,7 @@ export default function TamagotchiPage() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appState, selected]);
+  }, [appState, selected, showMessage]);
 
   // tick stats + consola + HUD
   useEffect(() => {
@@ -538,6 +547,7 @@ export default function TamagotchiPage() {
             m.idx = Math.floor(Math.random() * PET_MESSAGES.length);
             m.visible = true;
             m.untilMs = performance.now() + MSG_DURATION_MS;
+            setMessageText(PET_MESSAGES[m.idx] ?? "");
           }
         }
       }
@@ -670,22 +680,13 @@ export default function TamagotchiPage() {
         if (ic) ctx.drawImage(ic, 0, 0, ICON_W, ICON_H);
       }
 
-      // mensaje
       const m = msgRef.current;
-      if (hasAlert()) m.visible = false;
-
-      if (m.visible && now <= m.untilMs) {
-        const text = PET_MESSAGES[m.idx] ?? "";
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, 84, 10);
-
-        // Texto CRISP: sin reescalado raro (canvas siempre en múltiplos enteros)
-        ctx.fillStyle = "#fff";
-        ctx.font = "8px monospace";
-        ctx.textBaseline = "top";
-        ctx.fillText(text, ICON_W + 1, 1);
+      if (hasAlert() && m.visible) {
+        m.visible = false;
+        setMessageText("");
       } else if (m.visible && now > m.untilMs) {
         m.visible = false;
+        setMessageText("");
       }
 
       requestAnimationFrame(draw);
@@ -707,6 +708,12 @@ export default function TamagotchiPage() {
     petY,
     pickIcon,
   ]);
+
+  const lcdScale = cssW ? cssW / LCD_W : 1;
+  const messageLeft = Math.round((ICON_W + 1) * lcdScale);
+  const messageTop = Math.round(1 * lcdScale);
+  const messageWidth = 300;
+  const messageHeight = Math.round(18 * lcdScale);
 
   if (error) {
     return (
@@ -896,6 +903,7 @@ export default function TamagotchiPage() {
                   maxWidth: "100%",
                   display: "grid",
                   placeItems: "center",
+                  position: "relative",
                 }}
               >
                 <canvas
@@ -914,6 +922,38 @@ export default function TamagotchiPage() {
                     display: "block",
                   }}
                 />
+                {messageText ? (
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: messageLeft,
+                      top: messageTop,
+                      width: messageWidth,
+                      minHeight: messageHeight,
+                      padding: `${Math.max(2, Math.floor(lcdScale * 0.7))}px ${Math.max(
+                        3,
+                        Math.floor(lcdScale),
+                      )}px`,
+                      borderRadius: Math.max(2, Math.floor(lcdScale * 0.75)),
+                      background: "rgba(0,0,0,.92)",
+                      color: "#fff",
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
+                      fontSize: Math.max(26, Math.floor(lcdScale * 6)),
+                      fontWeight: 900,
+                      lineHeight: 1.05,
+                      letterSpacing: 0,
+                      boxSizing: "border-box",
+                      overflow: "hidden",
+                      whiteSpace: "normal",
+                      overflowWrap: "break-word",
+                      pointerEvents: "none",
+                      textShadow: "0 1px 0 #000",
+                    }}
+                  >
+                    {messageText}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

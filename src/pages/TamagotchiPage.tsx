@@ -40,7 +40,7 @@ const TH_ENERGY = 25;
 const TH_HYGIENE = 25;
 const TH_HAPPY = 40;
 
-const DEBUG_SPEEDUP = true;
+const DEBUG_SPEEDUP = import.meta.env.DEV;
 const PET_TICK_MS = DEBUG_SPEEDUP ? 5000 : 60000;
 
 const ICON_FRAME_MS = 350;
@@ -199,15 +199,21 @@ function useAudio() {
       g.gain.cancelScheduledValues(ctx.currentTime);
       g.gain.setValueAtTime(g.gain.value, ctx.currentTime);
       g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.01);
-    } catch {}
+    } catch {
+      // Some browsers throw if the audio node is already stopped.
+    }
 
     if (osc) {
       try {
         osc.stop(ctx.currentTime + 0.02);
-      } catch {}
+      } catch {
+        // Some browsers throw if the oscillator is already stopped.
+      }
       try {
         osc.disconnect();
-      } catch {}
+      } catch {
+        // Some browsers throw if the oscillator is already disconnected.
+      }
     }
     oscRef.current = null;
   }, []);
@@ -361,7 +367,7 @@ export default function TamagotchiPage() {
     return { cssW: Math.floor(w), cssH: Math.floor(h) };
   }, [wrapW]);
 
-  const pickIcon = (): IconType => {
+  const pickIcon = useCallback((): IconType => {
     const p = petRef.current;
     if (p.health <= TH_SICK) return "MEDICINA";
     if (p.hunger <= TH_HUNGER) return "FOODICON";
@@ -369,9 +375,9 @@ export default function TamagotchiPage() {
     if (p.hygiene <= TH_HYGIENE) return "WATERICON";
     if (p.happiness <= TH_HAPPY) return "NOTE";
     return "NONE";
-  };
+  }, []);
 
-  const hasAlert = () => pickIcon() !== "NONE";
+  const hasAlert = useCallback(() => pickIcon() !== "NONE", [pickIcon]);
 
   const actionMap: ActionType[] = ["MUSIC", "SLEEP", "EAT", "BATH", "SICK"];
 
@@ -517,9 +523,11 @@ export default function TamagotchiPage() {
           if (p.hygiene <= 20) p.health = clampi(p.health - 1, 0, 100);
           if (p.health <= 30) p.happiness = clampi(p.happiness - 2, 0, 100);
 
-          console.log(
-            `[PET] tick ageTicks=${p.ageTicks} hunger=${p.hunger} energy=${p.energy} hygiene=${p.hygiene} health=${p.health} happy=${p.happiness}`,
-          );
+          if (import.meta.env.DEV) {
+            console.log(
+              `[PET] tick ageTicks=${p.ageTicks} hunger=${p.hunger} energy=${p.energy} hygiene=${p.hygiene} health=${p.health} happy=${p.happiness}`,
+            );
+          }
 
           const m = msgRef.current;
           if (
@@ -687,7 +695,18 @@ export default function TamagotchiPage() {
     return () => {
       alive = false;
     };
-  }, [assets, selected, appState, curAction, petFrame, iconFrame]);
+  }, [
+    assets,
+    selected,
+    appState,
+    curAction,
+    petFrame,
+    iconFrame,
+    hasAlert,
+    menuX,
+    petY,
+    pickIcon,
+  ]);
 
   if (error) {
     return (

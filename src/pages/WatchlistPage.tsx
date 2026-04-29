@@ -149,7 +149,7 @@ export default function WatchlistPage() {
     return () => {
       cancelled = true;
     };
-  }, [selected?.mediaType, selected?.tmdbId]);
+  }, [selected]);
 
   // ---------- Helpers ----------
   const existingIds = useMemo(() => {

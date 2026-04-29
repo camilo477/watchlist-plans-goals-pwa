@@ -4,25 +4,39 @@ import { VitePWA } from "vite-plugin-pwa";
 
 const repo = "watchlist-plans-goals-pwa";
 
-export default defineConfig({
-  base: `/${repo}/`,
-  plugins: [
-    react(),
-    VitePWA({
-      registerType: "autoUpdate",
-      scope: `/${repo}/`,
-      manifest: {
-        name: "App Pareja",
-        short_name: "Pareja",
-        start_url: `/${repo}/`,
-        display: "standalone",
-        theme_color: "#0f172a",
-        background_color: "#0f172a",
-        icons: [
-          { src: "pwa-192.png", sizes: "192x192", type: "image/png" },
-          { src: "pwa-512.png", sizes: "512x512", type: "image/png" }
-        ]
-      }
-    })
-  ]
+export default defineConfig(({ command }) => {
+  const basePath = command === "build" ? `/${repo}/` : "/";
+
+  return {
+    base: basePath,
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ["react", "react-dom", "react-router-dom"],
+            firebase: ["firebase/app", "firebase/auth", "firebase/firestore"],
+          },
+        },
+      },
+    },
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: "autoUpdate",
+        scope: basePath,
+        manifest: {
+          name: "App Pareja",
+          short_name: "Pareja",
+          start_url: basePath,
+          display: "standalone",
+          theme_color: "#0f172a",
+          background_color: "#0f172a",
+          icons: [
+            { src: "pwa-192.png", sizes: "192x192", type: "image/png" },
+            { src: "pwa-512.png", sizes: "512x512", type: "image/png" },
+          ],
+        },
+      }),
+    ],
+  };
 });

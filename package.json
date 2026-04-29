@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "update:firebase-user": "node scripts/update-firebase-user.mjs"
+    "update:firebase-user": "node scripts/update-firebase-user.mjs",
+    "rename:firebase-user": "node scripts/rename-firebase-user.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

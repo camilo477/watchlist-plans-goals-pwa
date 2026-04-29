@@ -1,6 +1,8 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
+import { useAuth } from "../auth/AuthProvider";
 import { auth } from "../lib/firebase";
+import { nameFromEmail } from "../lib/userNames";
 
 const topLinkStyle = (active: boolean): React.CSSProperties => ({
   padding: "9px 12px",
@@ -25,6 +27,8 @@ const navItems = [
 export default function HomeLayout() {
   const { pathname } = useLocation();
   const nav = useNavigate();
+  const { user } = useAuth();
+  const displayName = user?.displayName || nameFromEmail(user?.email) || "Usuario";
 
   async function logout() {
     await signOut(auth);
@@ -92,6 +96,30 @@ export default function HomeLayout() {
           background: var(--app-surface-2);
           color: var(--app-text);
           cursor: pointer;
+          white-space: nowrap;
+        }
+
+        .sessionBox{
+          display:flex;
+          align-items:center;
+          justify-content:flex-end;
+          gap: 9px;
+          min-width: 0;
+        }
+
+        .sessionName{
+          min-width: 0;
+          max-width: 210px;
+          padding: 8px 11px;
+          border-radius: 8px;
+          border: 1px solid rgba(125,211,176,.24);
+          background: rgba(125,211,176,.10);
+          color: var(--app-text);
+          font-size: 13px;
+          font-weight: 800;
+          line-height: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
           white-space: nowrap;
         }
 
@@ -174,6 +202,14 @@ export default function HomeLayout() {
           .topNav{ display: none; }
           .topbarInner{ padding: 12px 14px; }
           .main{ padding: 16px 12px 92px; }
+          .brand span:last-child{ display: none; }
+          .sessionBox{ gap: 7px; }
+          .sessionName{
+            max-width: min(42vw, 170px);
+            padding: 8px 9px;
+            font-size: 12px;
+          }
+          .logoutBtn{ padding: 8px 10px; }
         }
       `}</style>
 
@@ -183,9 +219,14 @@ export default function HomeLayout() {
             <span className="brandMark">DM</span>
             <span>DianiMilo</span>
           </div>
-          <button onClick={logout} className="logoutBtn">
-            Salir
-          </button>
+          <div className="sessionBox" aria-label="Sesion actual">
+            <div className="sessionName" title={displayName}>
+              {displayName}
+            </div>
+            <button onClick={logout} className="logoutBtn">
+              Salir
+            </button>
+          </div>
         </div>
 
         <nav className="topNav">

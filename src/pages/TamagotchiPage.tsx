@@ -114,6 +114,16 @@ function readNumber(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function getErrorMessage(error: unknown) {
+  if (error && typeof error === "object") {
+    const { code, message } = error as { code?: unknown; message?: unknown };
+    const text = typeof message === "string" ? message : "Error desconocido";
+    return typeof code === "string" ? `${code}: ${text}` : text;
+  }
+
+  return error instanceof Error ? error.message : String(error);
+}
+
 function normalizePetStats(value: unknown): PetStats {
   const data = value && typeof value === "object" ? (value as Partial<PetStats>) : {};
   const fallback = createDefaultPetStats();
@@ -395,6 +405,8 @@ export default function TamagotchiPage() {
   const [iconFrame, setIconFrame] = useState<0 | 1>(0);
   const [petFrame, setPetFrame] = useState<0 | 1 | 2 | 3>(0);
   const [messageText, setMessageText] = useState("");
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const petRef = useRef<PetStats>(createDefaultPetStats());
   const saveTimerRef = useRef<number | null>(null);
@@ -498,11 +510,21 @@ export default function TamagotchiPage() {
 
   const scheduleSavePet = useCallback(() => {
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    setSyncMessage("Guardando en Firebase...");
+    setSyncError(null);
     saveTimerRef.current = window.setTimeout(() => {
       saveTimerRef.current = null;
-      savePetNow().catch((err) => {
-        console.warn("tamagotchi save error:", err);
-      });
+      savePetNow()
+        .then(() => {
+          setSyncMessage("Guardado en Firebase");
+          setSyncError(null);
+        })
+        .catch((err) => {
+          const message = getErrorMessage(err);
+          console.warn("tamagotchi save error:", err);
+          setSyncMessage(null);
+          setSyncError(`No se pudo guardar en Firebase: ${message}`);
+        });
     }, PET_SAVE_DEBOUNCE_MS);
   }, [savePetNow]);
 
@@ -518,6 +540,7 @@ export default function TamagotchiPage() {
     const unsub = onSnapshot(
       petDocRef,
       (snap) => {
+        setSyncError(null);
         const next = snap.exists()
           ? normalizePetStats(snap.data())
           : createDefaultPetStats();
@@ -532,7 +555,9 @@ export default function TamagotchiPage() {
         }
       },
       (err) => {
+        const message = getErrorMessage(err);
         console.warn("tamagotchi snapshot error:", err);
+        setSyncError(`No se pudo leer Firebase: ${message}`);
         hydratedRef.current = true;
       },
     );
@@ -1004,6 +1029,29 @@ export default function TamagotchiPage() {
             <StatPill k="Health" v={hud.health} />
             <StatPill k="Happy" v={hud.happiness} />
           </div>
+
+          {syncError || syncMessage ? (
+            <div
+              style={{
+                border: syncError
+                  ? "1px solid rgba(255,255,255,0.38)"
+                  : "1px solid rgba(0,0,0,0.18)",
+                background: syncError
+                  ? "rgba(255,255,255,0.18)"
+                  : "rgba(255,255,255,0.14)",
+                color: "#231f20",
+                borderRadius: 8,
+                padding: "8px 10px",
+                fontSize: 12,
+                fontWeight: 800,
+                lineHeight: 1.25,
+                overflowWrap: "anywhere",
+                textAlign: "center",
+              }}
+            >
+              {syncError ?? syncMessage}
+            </div>
+          ) : null}
 
           {/* contenedor que define el ancho disponible para escalar */}
           <div

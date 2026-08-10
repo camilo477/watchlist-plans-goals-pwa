@@ -878,9 +878,11 @@ export default function TamagotchiPage() {
       <div
         ref={lcdWrapRef}
         style={{
-          background: "#111",
-          padding: 10,
-          borderRadius: 14,
+          background: "var(--app-surface)",
+          padding: 16,
+          borderRadius: 18,
+          border: "3px solid var(--app-border-strong)",
+          boxShadow: "var(--app-shadow)",
           width: "100%",
           boxSizing: "border-box",
           overflow: "hidden",
@@ -902,10 +904,12 @@ export default function TamagotchiPage() {
       <div
         style={{
           padding: 16,
-          fontFamily: "system-ui",
-          color: "#fff",
-          background: "#111",
-          minHeight: "100dvh",
+          color: "var(--app-text)",
+          background: "var(--app-surface)",
+          border: "3px solid var(--app-border-strong)",
+          borderRadius: 18,
+          boxShadow: "var(--app-shadow)",
+          fontWeight: 900,
         }}
       >
         Cargando sprites...
@@ -929,20 +933,23 @@ export default function TamagotchiPage() {
       onClick={onPress}
       disabled={disabled}
       style={{
-        border: "1px solid rgba(255,255,255,0.18)",
+        border: "2px solid var(--app-border-strong)",
         background: disabled
-          ? "rgba(255,255,255,0.06)"
-          : "rgba(255,255,255,0.10)",
-        color: disabled ? "rgba(255,255,255,0.35)" : "#fff",
-        borderRadius: 8,
+          ? "rgba(255,248,232,.48)"
+          : "linear-gradient(180deg, #ffe08f, #f6c35f)",
+        color: disabled ? "var(--app-dim)" : "var(--app-ink)",
+        borderRadius: 16,
         padding: "14px 16px",
         minWidth: 86,
         fontWeight: 800,
-        letterSpacing: 0.5,
+        letterSpacing: 0,
         cursor: disabled ? "not-allowed" : "pointer",
         touchAction: "manipulation",
         userSelect: "none",
         width: "100%",
+        boxShadow: disabled
+          ? "none"
+          : "0 5px 0 rgba(85,54,38,.22), 0 9px 18px rgba(91,63,50,.12)",
       }}
     >
       <div style={{ fontSize: 16 }}>{label}</div>
@@ -960,9 +967,9 @@ export default function TamagotchiPage() {
         alignItems: "center",
         padding: "6px 10px",
         borderRadius: 999,
-        background: "rgba(0,0,0,0.22)",
-        border: "1px solid rgba(0,0,0,0.25)",
-        color: "#231f20",
+        background: "rgba(255,248,232,.86)",
+        border: "2px dashed rgba(102,66,45,.34)",
+        color: "var(--app-ink)",
         fontWeight: 900,
         fontSize: 12,
         lineHeight: 1,
@@ -974,7 +981,7 @@ export default function TamagotchiPage() {
         style={{
           padding: "4px 8px",
           borderRadius: 999,
-          background: "rgba(255,255,255,0.22)",
+          background: "rgba(246,195,95,.48)",
         }}
       >
         {v}
@@ -988,7 +995,6 @@ export default function TamagotchiPage() {
         padding: 0,
         display: "grid",
         placeItems: "center",
-        fontFamily: "system-ui",
         color: "var(--app-text)",
         overflowX: "hidden",
       }}
@@ -1004,24 +1010,58 @@ export default function TamagotchiPage() {
       >
         <div
           style={{
-            background: "linear-gradient(160deg, #d84b42, #9f2f37)",
-            padding: 14,
-            borderRadius: 10,
+            position: "relative",
+            background:
+              "linear-gradient(180deg, rgba(255,248,232,.96), rgba(247,223,185,.9))",
+            padding: 16,
+            borderRadius: 24,
             boxShadow: "var(--app-shadow)",
             display: "grid",
-            gap: 10,
-            border: "1px solid rgba(255,255,255,.16)",
+            gap: 12,
+            border: "3px solid var(--app-border-strong)",
+            overflow: "hidden",
           }}
         >
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              width: 108,
+              height: 30,
+              left: 34,
+              top: -13,
+              borderRadius: 6,
+              background: "rgba(158,216,209,.64)",
+              border: "2px solid rgba(102,66,45,.16)",
+              transform: "rotate(-4deg)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              right: 18,
+              top: 16,
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle at 37% 38%, var(--app-ink) 0 3px, transparent 4px), radial-gradient(circle at 63% 38%, var(--app-ink) 0 3px, transparent 4px), radial-gradient(circle at 50% 56%, var(--app-ink) 0 2px, transparent 3px), #f6b6ad",
+              border: "2px solid var(--app-border-strong)",
+              boxShadow: "0 4px 0 rgba(85,54,38,.16)",
+              transform: "rotate(8deg)",
+            }}
+          />
           <div
             style={{
               textAlign: "center",
               fontWeight: 900,
-              color: "#231f20",
-              fontSize: 14,
+              color: "var(--app-ink)",
+              fontSize: 18,
+              textShadow: "0 1px 0 rgba(255,255,255,.7)",
             }}
           >
-            zanahoria
+            Zanahoria
           </div>
 
           {/* HUD */}
@@ -1045,13 +1085,13 @@ export default function TamagotchiPage() {
             <div
               style={{
                 border: syncError
-                  ? "1px solid rgba(255,255,255,0.38)"
-                  : "1px solid rgba(0,0,0,0.18)",
+                  ? "2px solid rgba(168,63,63,0.45)"
+                  : "2px solid var(--app-border)",
                 background: syncError
-                  ? "rgba(255,255,255,0.18)"
-                  : "rgba(255,255,255,0.14)",
-                color: "#231f20",
-                borderRadius: 8,
+                  ? "rgba(246,182,173,.36)"
+                  : "rgba(184,217,156,.36)",
+                color: syncError ? "var(--app-danger)" : "var(--app-ink)",
+                borderRadius: 14,
                 padding: "8px 10px",
                 fontSize: 12,
                 fontWeight: 800,
@@ -1068,11 +1108,14 @@ export default function TamagotchiPage() {
           <div
             ref={lcdWrapRef}
             style={{
-              background: "#111",
-              padding: 10,
-              borderRadius: 14,
+              background:
+                "linear-gradient(180deg, rgba(91,63,50,.16), rgba(91,63,50,.08))",
+              padding: 12,
+              borderRadius: 20,
+              border: "3px solid var(--app-border-strong)",
               width: "100%",
               boxSizing: "border-box",
+              boxShadow: "inset 0 4px 0 rgba(91,63,50,.12)",
             }}
           >
             <div
@@ -1097,10 +1140,11 @@ export default function TamagotchiPage() {
                     maxWidth: "100%",
                     aspectRatio: `${LCD_W} / ${LCD_H}`,
                     imageRendering: "pixelated",
-                    border: "3px solid #000",
-                    borderRadius: 8,
+                    border: "4px solid var(--app-ink)",
+                    borderRadius: 12,
                     background: "#000",
                     display: "block",
+                    boxShadow: "0 5px 0 rgba(85,54,38,.18)",
                   }}
                 />
                 {messageText ? (
@@ -1116,8 +1160,9 @@ export default function TamagotchiPage() {
                         Math.floor(lcdScale),
                       )}px`,
                       borderRadius: Math.max(2, Math.floor(lcdScale * 0.75)),
-                      background: "rgba(0,0,0,.92)",
-                      color: "#fff",
+                      background: "rgba(255,248,232,.94)",
+                      border: "2px solid var(--app-ink)",
+                      color: "var(--app-ink)",
                       fontFamily:
                         'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
                       fontSize: Math.max(26, Math.floor(lcdScale * 6)),
@@ -1129,7 +1174,7 @@ export default function TamagotchiPage() {
                       whiteSpace: "normal",
                       overflowWrap: "break-word",
                       pointerEvents: "none",
-                      textShadow: "0 1px 0 #000",
+                      textShadow: "none",
                     }}
                   >
                     {messageText}
@@ -1173,7 +1218,14 @@ export default function TamagotchiPage() {
             />
           </div>
 
-          <div style={{ fontSize: 12, opacity: 0.85, textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--app-muted)",
+              fontWeight: 800,
+              textAlign: "center",
+            }}
+          >
             Teclado: ←/→ · Enter/A · Esc/B
           </div>
         </div>

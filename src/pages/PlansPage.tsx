@@ -269,15 +269,15 @@ export default function PlansPage() {
               }}
             >
               <h3 style={{ margin: 0 }}>{col.label}</h3>
-              <span style={{ color: "#94a3b8", fontSize: 12 }}>
+              <span style={{ color: "var(--app-muted)", fontSize: 12, fontWeight: 900 }}>
                 {grouped[col.key].length}
               </span>
             </div>
 
             <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
-              {loading && <p style={{ color: "#94a3b8" }}>Cargando…</p>}
+              {loading && <p style={{ color: "var(--app-muted)" }}>Cargando…</p>}
               {!loading && grouped[col.key].length === 0 && (
-                <p style={{ color: "#94a3b8" }}>Nada aquí.</p>
+                <p style={{ color: "var(--app-muted)" }}>Nada aquí.</p>
               )}
 
               {grouped[col.key].map((p) => (
@@ -289,7 +289,7 @@ export default function PlansPage() {
                   />
 
                   {p.createdByName || p.createdByEmail ? (
-                    <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                    <div style={{ color: "var(--app-muted)", fontSize: 12, fontWeight: 800 }}>
                       Agregado por:{" "}
                       {p.createdByName ||
                         (p.createdByEmail
@@ -333,13 +333,13 @@ export default function PlansPage() {
                           target="_blank"
                           rel="noreferrer"
                           className="linkItem"
-                          style={{ color: "#93c5fd", fontSize: 13 }}
+                          style={{ color: "#8f3d27", fontSize: 13, fontWeight: 900 }}
                         >
                           {l}
                         </a>
                       ))}
                       {p.links!.length > 4 ? (
-                        <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                        <span style={{ color: "var(--app-muted)", fontSize: 12 }}>
                           +{p.links!.length - 4} más
                         </span>
                       ) : null}
@@ -392,7 +392,7 @@ export default function PlansPage() {
                   </div>
 
                   {p.updatedByName || p.updatedByEmail ? (
-                    <div style={{ color: "#64748b", fontSize: 11 }}>
+                    <div style={{ color: "var(--app-dim)", fontSize: 11, fontWeight: 800 }}>
                       Última edición:{" "}
                       {p.updatedByName ||
                         (p.updatedByEmail
@@ -420,10 +420,10 @@ const card: React.CSSProperties = {
 };
 
 const column: React.CSSProperties = {
-  border: "1px solid var(--app-border)",
-  borderRadius: 8,
+  border: "2px solid var(--app-border)",
+  borderRadius: 14,
   padding: 12,
-  background: "rgba(16,17,15,.48)",
+  background: "rgba(255,248,232,.72)",
   minHeight: 220,
   minWidth: 0, // clave para que no se rompa en grids
 };
@@ -440,10 +440,10 @@ const planCard: React.CSSProperties = {
 
 const input: React.CSSProperties = {
   boxSizing: "border-box",
-  background: "rgba(16,17,15,.6)",
-  border: "1px solid var(--app-border-strong)",
+  background: "rgba(255,248,232,.92)",
+  border: "2px solid var(--app-border-strong)",
   color: "var(--app-text)",
-  borderRadius: 8,
+  borderRadius: 12,
   padding: "10px 10px",
   outline: "none",
   width: "100%",
@@ -451,10 +451,10 @@ const input: React.CSSProperties = {
 };
 
 const primaryBtn: React.CSSProperties = {
-  background: "rgba(125,211,176,.16)",
-  border: "1px solid rgba(125,211,176,.34)",
-  color: "var(--app-text)",
-  borderRadius: 8,
+  background: "#ffd66f",
+  border: "2px solid var(--app-border-strong)",
+  color: "var(--app-ink)",
+  borderRadius: 12,
   padding: "10px 12px",
   cursor: "pointer",
   minHeight: 40,
@@ -462,10 +462,10 @@ const primaryBtn: React.CSSProperties = {
 };
 
 const smallBtn: React.CSSProperties = {
-  background: "rgba(244,240,232,.06)",
-  border: "1px solid var(--app-border)",
+  background: "rgba(255,248,232,.9)",
+  border: "2px solid var(--app-border)",
   color: "var(--app-text)",
-  borderRadius: 8,
+  borderRadius: 12,
   padding: "8px 10px",
   cursor: "pointer",
   minHeight: 36,

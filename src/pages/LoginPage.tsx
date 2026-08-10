@@ -85,9 +85,9 @@ export default function LoginPage() {
 
   const input: React.CSSProperties = {
     padding: "11px 12px",
-    borderRadius: 8,
-    border: "1px solid var(--app-border-strong)",
-    background: "rgba(16,17,15,.72)",
+    borderRadius: 14,
+    border: "2px solid var(--app-border-strong)",
+    background: "rgba(255,248,232,.86)",
     color: "var(--app-text)",
     width: "100%",
     boxSizing: "border-box",
@@ -96,10 +96,10 @@ export default function LoginPage() {
 
   const btn: React.CSSProperties = {
     padding: "11px 12px",
-    borderRadius: 8,
-    border: "1px solid rgba(125,211,176,.35)",
-    background: "rgba(125,211,176,.18)",
-    color: "var(--app-text)",
+    borderRadius: 14,
+    border: "2px solid var(--app-border-strong)",
+    background: "#ffe08f",
+    color: "var(--app-ink)",
     width: "100%",
     cursor: "pointer",
     fontWeight: 800,
@@ -131,11 +131,25 @@ export default function LoginPage() {
         .loginCard{
           width: min(380px, 100%);
           padding: 20px;
-          border-radius: 10px;
-          border: 1px solid var(--app-border);
+          border-radius: 22px;
+          border: 3px solid var(--app-border-strong);
           background: var(--app-surface);
           box-shadow: var(--app-shadow);
           box-sizing: border-box;
+          position: relative;
+        }
+
+        .loginCard::before{
+          content: "";
+          position: absolute;
+          width: 92px;
+          height: 28px;
+          top: -15px;
+          left: 28px;
+          border-radius: 5px;
+          border: 2px solid rgba(102,66,45,.16);
+          background: rgba(158,216,209,.68);
+          transform: rotate(-4deg);
         }
 
         @media (max-height: 520px){

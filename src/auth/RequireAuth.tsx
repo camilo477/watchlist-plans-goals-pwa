@@ -12,11 +12,12 @@ export default function RequireAuth() {
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
-          background: "#0b1220",
-          color: "white",
+          background: "var(--app-bg)",
+          color: "var(--app-text)",
+          fontWeight: 900,
         }}
       >
-        Cargando…
+        Cargando...
       </div>
     );
   }

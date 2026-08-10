@@ -38,8 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         <div
           style={{
             width: "min(520px, 100%)",
-            border: "1px solid var(--app-border)",
-            borderRadius: 8,
+            border: "3px solid var(--app-border-strong)",
+            borderRadius: 22,
             background: "var(--app-surface)",
             boxShadow: "var(--app-shadow)",
             padding: 18,
@@ -52,9 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           <pre
             style={{
               whiteSpace: "pre-wrap",
-              background: "rgba(16,17,15,.72)",
-              border: "1px solid var(--app-border)",
-              borderRadius: 8,
+              background: "rgba(255,248,232,.86)",
+              border: "2px dashed var(--app-border)",
+              borderRadius: 14,
               padding: 12,
               color: "var(--app-text)",
               margin: 0,

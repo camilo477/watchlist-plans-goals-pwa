@@ -242,7 +242,8 @@ export default function WatchlistPage() {
       {/* CSS responsive local */}
       <style>{`
   .wlPage{
-    max-width: 1500px;
+    width: 100%;
+    max-width: 1100px;
     margin: 0 auto;
     display: grid;
     gap: 16px;
@@ -253,7 +254,7 @@ export default function WatchlistPage() {
     display: grid;
     gap: 14px;
     align-items: start;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) 460px;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(300px, 360px);
     grid-template-areas:
       "pending watching done right";
   }

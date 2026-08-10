@@ -239,7 +239,15 @@ export default function RoulettePage() {
   }
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 1100,
+        margin: "0 auto",
+        display: "grid",
+        gap: 16,
+      }}
+    >
       <header>
         <h2 style={{ margin: 0 }}>Ruleta</h2>
         <p style={{ color: "var(--app-muted)", marginTop: 6 }}>
@@ -285,7 +293,8 @@ export default function RoulettePage() {
               display: "flex",
               gap: 8,
               alignItems: "center",
-              color: "#e2e8f0",
+              color: "var(--app-ink)",
+              fontWeight: 800,
             }}
           >
             <input
@@ -309,7 +318,7 @@ export default function RoulettePage() {
 
           <div style={stage}>
             {!highlight ? (
-              <div style={{ color: "#94a3b8" }}>
+              <div style={{ color: "var(--app-muted)" }}>
                 Presiona <strong>Girar</strong> para elegir.
               </div>
             ) : (
@@ -337,12 +346,12 @@ export default function RoulettePage() {
                       style={{
                         fontSize: 18,
                         fontWeight: 800,
-                        color: "#e2e8f0",
+                        color: "var(--app-ink)",
                       }}
                     >
                       {highlight.title}
                     </div>
-                    <div style={{ color: "#94a3b8", fontSize: 13 }}>
+                    <div style={{ color: "var(--app-muted)", fontSize: 13 }}>
                       {highlight.subtitle || ""}
                       {spinning ? " • girando..." : ""}
                     </div>
@@ -352,7 +361,7 @@ export default function RoulettePage() {
                 {winner ? (
                   <div style={winBox}>
                     <div style={{ fontWeight: 800 }}>Resultado</div>
-                    <div style={{ color: "#cbd5e1" }}>
+                    <div style={{ color: "var(--app-text)" }}>
                       {winner.kind === "plan" ? "Plan elegido" : "Para ver"}:{" "}
                       <strong>{winner.title}</strong>
                     </div>
@@ -394,8 +403,8 @@ export default function RoulettePage() {
 
 /* styles */
 const card: React.CSSProperties = {
-  border: "1px solid var(--app-border)",
-  borderRadius: 8,
+  border: "2px solid var(--app-border)",
+  borderRadius: 14,
   padding: 14,
   background: "var(--app-surface)",
   boxShadow: "0 12px 30px rgba(0,0,0,.18)",
@@ -403,24 +412,25 @@ const card: React.CSSProperties = {
 
 const pill: React.CSSProperties = {
   padding: "8px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--app-border)",
-  background: "rgba(244,240,232,.06)",
+  borderRadius: 12,
+  border: "2px solid var(--app-border)",
+  background: "rgba(255,248,232,.9)",
   color: "var(--app-text)",
   cursor: "pointer",
 };
 
 const pillActive: React.CSSProperties = {
   ...pill,
-  border: "1px solid rgba(125,211,176,.36)",
-  background: "rgba(125,211,176,.14)",
+  border: "2px solid var(--app-border-strong)",
+  background: "#ffd66f",
+  color: "var(--app-ink)",
 };
 
 const stage: React.CSSProperties = {
-  border: "1px dashed var(--app-border-strong)",
-  borderRadius: 8,
+  border: "2px dashed var(--app-border-strong)",
+  borderRadius: 14,
   padding: 16,
-  background: "rgba(16,17,15,.48)",
+  background: "rgba(255,248,232,.78)",
   minHeight: 120,
   display: "flex",
   alignItems: "center",
@@ -430,29 +440,29 @@ const stage: React.CSSProperties = {
 const poster: React.CSSProperties = {
   width: 64,
   height: 96,
-  borderRadius: 8,
+  borderRadius: 12,
   objectFit: "cover",
-  background: "rgba(244,240,232,.06)",
-  border: "1px solid var(--app-border)",
+  background: "rgba(255,248,232,.88)",
+  border: "2px solid var(--app-border)",
 };
 
 const planIcon: React.CSSProperties = {
   width: 64,
   height: 96,
-  borderRadius: 8,
+  borderRadius: 12,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: "rgba(244,240,232,.06)",
-  border: "1px solid var(--app-border)",
+  background: "rgba(255,248,232,.88)",
+  border: "2px solid var(--app-border)",
 };
 
 const bigBtn: React.CSSProperties = {
   padding: "12px 18px",
-  borderRadius: 8,
-  border: "1px solid rgba(125,211,176,.36)",
-  background: "rgba(125,211,176,.16)",
-  color: "var(--app-text)",
+  borderRadius: 14,
+  border: "2px solid var(--app-border-strong)",
+  background: "#ffd66f",
+  color: "var(--app-ink)",
   cursor: "pointer",
   fontWeight: 800,
   minWidth: 160,
@@ -460,46 +470,46 @@ const bigBtn: React.CSSProperties = {
 
 const disabledBigBtn: React.CSSProperties = {
   ...bigBtn,
-  border: "1px solid var(--app-border)",
-  background: "rgba(244,240,232,.05)",
+  border: "2px solid var(--app-border)",
+  background: "rgba(255,248,232,.65)",
   color: "var(--app-dim)",
   cursor: "not-allowed",
 };
 
 const primaryBtn: React.CSSProperties = {
   padding: "10px 12px",
-  borderRadius: 8,
-  border: "1px solid rgba(125,211,176,.34)",
-  background: "rgba(125,211,176,.16)",
-  color: "var(--app-text)",
+  borderRadius: 12,
+  border: "2px solid var(--app-border-strong)",
+  background: "#ffd66f",
+  color: "var(--app-ink)",
   cursor: "pointer",
   fontWeight: 700,
 };
 
 const smallBtn: React.CSSProperties = {
   padding: "10px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--app-border)",
-  background: "rgba(244,240,232,.06)",
+  borderRadius: 12,
+  border: "2px solid var(--app-border)",
+  background: "rgba(255,248,232,.9)",
   color: "var(--app-text)",
   cursor: "pointer",
 };
 
 const winBox: React.CSSProperties = {
   marginTop: 6,
-  border: "1px solid rgba(34,197,94,.35)",
-  background: "rgba(34,197,94,.10)",
-  borderRadius: 8,
+  border: "2px solid rgba(82,111,45,.45)",
+  background: "rgba(184,217,156,.35)",
+  borderRadius: 14,
   padding: 12,
   display: "grid",
   gap: 10,
 };
 
 const errorBox: React.CSSProperties = {
-  border: "1px solid rgba(248,113,113,.35)",
-  background: "rgba(248,113,113,.10)",
+  border: "2px solid rgba(168,63,63,.45)",
+  background: "rgba(246,182,173,.32)",
   borderRadius: 12,
   padding: 12,
-  color: "#fecaca",
+  color: "var(--app-danger)",
   fontSize: 13,
 };

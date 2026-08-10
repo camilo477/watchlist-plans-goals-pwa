@@ -94,9 +94,9 @@ function progressLines(progress: GoalProgress): string[] {
 function useStyles() {
   const s = useMemo(() => {
     const card: React.CSSProperties = {
-      border: "1px solid var(--app-border)",
+      border: "2px solid var(--app-border)",
       background: "var(--app-surface)",
-      borderRadius: 8,
+      borderRadius: 14,
       padding: 14,
       boxShadow: "0 12px 30px rgba(0,0,0,.18)",
     };
@@ -114,9 +114,9 @@ function useStyles() {
       display: "block",
       boxSizing: "border-box",
       padding: "10px 12px",
-      borderRadius: 8,
-      border: "1px solid var(--app-border-strong)",
-      background: "rgba(16,17,15,.6)",
+      borderRadius: 12,
+      border: "2px solid var(--app-border-strong)",
+      background: "rgba(255,248,232,.92)",
       color: "var(--app-text)",
       outline: "none",
       minWidth: 0,
@@ -135,9 +135,9 @@ function useStyles() {
 
     const btn: React.CSSProperties = {
       padding: "10px 12px",
-      borderRadius: 8,
-      border: "1px solid var(--app-border)",
-      background: "rgba(244,240,232,.06)",
+      borderRadius: 12,
+      border: "2px solid var(--app-border)",
+      background: "rgba(255,248,232,.9)",
       color: "var(--app-text)",
       cursor: "pointer",
       whiteSpace: "nowrap",
@@ -145,8 +145,8 @@ function useStyles() {
 
     const btnPrimary: React.CSSProperties = {
       ...btn,
-      border: "1px solid rgba(125,211,176,.34)",
-      background: "rgba(125,211,176,.16)",
+      border: "2px solid var(--app-border-strong)",
+      background: "#ffd66f",
       fontWeight: 800,
     };
 
@@ -156,8 +156,8 @@ function useStyles() {
       gap: 6,
       padding: "4px 8px",
       borderRadius: 999,
-      border: "1px solid var(--app-border)",
-      background: "rgba(244,240,232,.06)",
+      border: "2px solid var(--app-border)",
+      background: "rgba(255,248,232,.82)",
       color: "var(--app-text)",
       fontSize: 12,
       maxWidth: "100%",
@@ -513,7 +513,16 @@ export default function GoalsPage() {
   }, [goals]);
 
   return (
-    <div style={{ display: "grid", gap: 14, minWidth: 0 }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 1100,
+        margin: "0 auto",
+        display: "grid",
+        gap: 14,
+        minWidth: 0,
+      }}
+    >
       {/* Form */}
       <div style={s.card}>
         <div
@@ -525,10 +534,10 @@ export default function GoalsPage() {
           }}
         >
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 800, color: "#e2e8f0" }}>
+            <div style={{ fontWeight: 800, color: "var(--app-ink)" }}>
               {editingId ? "Editar meta" : "Nueva meta"}
             </div>
-            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: "var(--app-muted)", marginTop: 2 }}>
               {editingId ? "Actualiza y guarda" : "Crea una meta en segundos"}
             </div>
           </div>
@@ -558,7 +567,7 @@ export default function GoalsPage() {
 
         <hr style={s.hr} />
 
-        <div style={{ fontWeight: 700, color: "#cbd5e1", marginBottom: 8 }}>
+        <div style={{ fontWeight: 700, color: "var(--app-text)", marginBottom: 8 }}>
           Detalles
         </div>
         <div style={s.gridAuto}>
@@ -620,7 +629,7 @@ export default function GoalsPage() {
 
         <hr style={s.hr} />
 
-        <div style={{ fontWeight: 700, color: "#cbd5e1", marginBottom: 8 }}>
+        <div style={{ fontWeight: 700, color: "var(--app-text)", marginBottom: 8 }}>
           Progreso
         </div>
 
@@ -638,7 +647,7 @@ export default function GoalsPage() {
               display: "flex",
               gap: 8,
               alignItems: "center",
-              color: "#cbd5e1",
+              color: "var(--app-text)",
             }}
           >
             <input
@@ -654,7 +663,7 @@ export default function GoalsPage() {
               display: "flex",
               gap: 8,
               alignItems: "center",
-              color: "#cbd5e1",
+              color: "var(--app-text)",
             }}
           >
             <input
@@ -666,7 +675,7 @@ export default function GoalsPage() {
           </label>
 
           {!useChecklist && !useMoney && (
-            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+            <span style={{ fontSize: 12, color: "var(--app-muted)" }}>
               Activa al menos una opción.
             </span>
           )}
@@ -702,7 +711,7 @@ export default function GoalsPage() {
               </div>
 
               <div
-                style={{ gridColumn: "1 / -1", fontSize: 12, color: "#cbd5e1" }}
+                style={{ gridColumn: "1 / -1", fontSize: 12, color: "var(--app-text)" }}
               >
                 {fmtCOP(Math.max(0, currentAmount))} /{" "}
                 {fmtCOP(Math.max(0, targetAmount))}
@@ -758,8 +767,8 @@ export default function GoalsPage() {
                         alignItems: "center",
                         padding: "8px 10px",
                         borderRadius: 12,
-                        border: "1px solid rgba(148,163,184,0.18)",
-                        background: "rgba(2,6,23,0.25)",
+                        border: "1px solid rgba(102,66,45,.28)",
+                        background: "rgba(255,248,232,.78)",
                         minWidth: 0,
                       }}
                     >
@@ -770,7 +779,7 @@ export default function GoalsPage() {
                       />
                       <div
                         style={{
-                          color: "#e2e8f0",
+                          color: "var(--app-ink)",
                           textDecoration: it.done ? "line-through" : "none",
                           overflowWrap: "anywhere",
                           minWidth: 0,
@@ -789,7 +798,7 @@ export default function GoalsPage() {
                   ))}
                 </div>
               ) : (
-                <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                <div style={{ fontSize: 12, color: "var(--app-muted)" }}>
                   Sin pasos todavía.
                 </div>
               )}
@@ -798,7 +807,7 @@ export default function GoalsPage() {
         </div>
       </div>
 
-      <div style={{ color: "#cbd5e1" }}>
+      <div style={{ color: "var(--app-text)" }}>
         {loading
           ? "Cargando…"
           : `${goals.length} meta${goals.length === 1 ? "" : "s"} en total`}
@@ -857,12 +866,12 @@ function GoalsSection(props: {
           gap: 10,
         }}
       >
-        <div style={{ fontWeight: 800, color: "#e2e8f0" }}>{title}</div>
-        <div style={{ fontSize: 12, color: "#94a3b8" }}>{items.length}</div>
+        <div style={{ fontWeight: 800, color: "var(--app-ink)" }}>{title}</div>
+        <div style={{ fontSize: 12, color: "var(--app-muted)" }}>{items.length}</div>
       </div>
 
       {items.length === 0 ? (
-        <div style={{ color: "#94a3b8", fontSize: 13, padding: "6px 2px" }}>
+        <div style={{ color: "var(--app-muted)", fontSize: 13, padding: "6px 2px" }}>
           —
         </div>
       ) : (
@@ -894,7 +903,7 @@ function GoalsSection(props: {
                     <div
                       style={{
                         fontWeight: 900,
-                        color: "#e2e8f0",
+                        color: "var(--app-ink)",
                         overflowWrap: "anywhere",
                       }}
                     >
@@ -920,7 +929,7 @@ function GoalsSection(props: {
                   </div>
 
                   {createdBy ? (
-                    <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                    <div style={{ color: "var(--app-muted)", fontSize: 12 }}>
                       Agregado por: {createdBy}
                     </div>
                   ) : null}
@@ -928,7 +937,7 @@ function GoalsSection(props: {
                   {g.description ? (
                     <div
                       style={{
-                        color: "#cbd5e1",
+                        color: "var(--app-text)",
                         lineHeight: 1.4,
                         overflowWrap: "anywhere",
                       }}
@@ -936,7 +945,7 @@ function GoalsSection(props: {
                       {g.description}
                     </div>
                   ) : (
-                    <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                    <div style={{ color: "var(--app-muted)", fontSize: 12 }}>
                       Sin descripción.
                     </div>
                   )}
@@ -944,14 +953,14 @@ function GoalsSection(props: {
                   <div
                     style={{
                       fontSize: 12,
-                      color: "#cbd5e1",
+                      color: "var(--app-text)",
                       display: "grid",
                       gap: 4,
                     }}
                   >
                     {progressLines(g.progress).map((line) => (
                       <div key={line}>
-                        <span style={{ color: "#94a3b8" }}>Progreso: </span>
+                        <span style={{ color: "var(--app-muted)" }}>Progreso: </span>
                         {line}
                       </div>
                     ))}
@@ -978,7 +987,7 @@ function GoalsSection(props: {
                   </div>
 
                   {updatedBy ? (
-                    <div style={{ color: "#64748b", fontSize: 11 }}>
+                    <div style={{ color: "var(--app-dim)", fontSize: 11 }}>
                       Última edición: {updatedBy}
                     </div>
                   ) : null}

@@ -1,23 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithCustomToken } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useAuth } from "../auth/AuthProvider";
-
-const USER_TO_EMAIL: Record<string, string> = {
-  camilo: "camilo_vito@yahoo.es",
-  diana: "dianaquiroga03@hotmail.com",
-};
-
-function normalizeUser(u: string) {
-  return u.trim().toLowerCase();
-}
-
-function resolveLoginEmail(value: string) {
-  const normalized = normalizeUser(value);
-  if (normalized.includes("@")) return normalized;
-  return USER_TO_EMAIL[normalized] ?? null;
-}
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -48,36 +33,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const email = resolveLoginEmail(username);
-
-      if (!email) {
-        setErr("Usa camilo, diana o tu correo.");
+      if (!username.trim() || !pass) {
+        setErr("Escribe el usuario y la contraseña.");
         return;
       }
 
-      if (!pass) {
-        setErr("Escribe la contraseña.");
+      const response = await fetch("/api/login", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password: pass }),
+      });
+      const data = (await response.json()) as { customToken?: string; message?: string };
+      if (!response.ok || !data.customToken) {
+        setErr(data.message || "No se pudo iniciar sesión.");
         return;
       }
 
-      await signInWithEmailAndPassword(auth, email, pass);
+      await signInWithCustomToken(auth, data.customToken);
       nav(from, { replace: true });
     } catch (e: any) {
-      const code = e?.code as string | undefined;
-
-      if (
-        code === "auth/invalid-credential" ||
-        code === "auth/wrong-password"
-      ) {
-        setErr("Contraseña incorrecta.");
-      } else if (code === "auth/user-not-found") {
-        setErr("Ese usuario no existe en Firebase Auth.");
-      } else if (code === "auth/too-many-requests") {
-        setErr("Demasiados intentos. Espera un momento y prueba de nuevo.");
-      } else {
-        setErr("No se pudo iniciar sesión. Revisa Firebase Auth y el correo.");
-        console.error("Login error:", e);
-      }
+      setErr("No se pudo conectar con el servidor.");
+      console.error("Login error:", e);
     } finally {
       setLoading(false);
     }

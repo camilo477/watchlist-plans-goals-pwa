@@ -1,9 +1,32 @@
-# React + TypeScript + Vite
+# Diamilo
+
+PWA compartida para películas, planes, metas y recuerdos, con React, Firebase y un servidor de autenticación propio.
+
+## Seguridad
+
+- Las credenciales se validan contra Firebase desde el servidor.
+- El navegador recibe un token personalizado de Firebase; la contraseña nunca se devuelve ni se guarda.
+- Sesión adicional por dispositivo, válida durante un máximo de siete días.
+- Bloqueo por IP durante 15 minutos después de cinco errores dentro de 15 minutos.
+- Sesiones, bloqueos y los 200 eventos más recientes se guardan en `/app/data/security.json`.
+- API interna protegida por token para mostrar sesiones y actividad en App Hub.
+- Cookies `HttpOnly`, `SameSite=Strict`, protección de origen y cabeceras CSP/HSTS.
+
+Después del primer despliegue con esta versión, las sesiones Firebase antiguas deberán iniciar sesión nuevamente para quedar registradas.
+
+## Variables
+
+Además de las variables `VITE_FIREBASE_*` y `VITE_TMDB_API_KEY` existentes, configura:
+
+```env
+DIAMILO_SECURITY_TOKEN=un-token-largo-y-aleatorio
+```
+
+El servidor acepta `FIREBASE_API_KEY` o reutiliza `VITE_FIREBASE_API_KEY` para validar las credenciales.
 
 ## Docker
 
-La app se puede construir como una imagen Docker que sirve el build de Vite con
-Nginx. Para correrla en una Raspberry o servidor propio:
+La imagen necesita el archivo de cuenta de servicio de Firebase montado como secreto. Ese JSON está ignorado por Git y Docker y no se copia dentro de la imagen.
 
 ```bash
 docker build \
@@ -15,88 +38,50 @@ docker build \
   --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID="..." \
   --build-arg VITE_FIREBASE_APP_ID="..." \
   --build-arg VITE_TMDB_API_KEY="..." \
-  -t app-diamilo .
+  -t app-diamilo:latest .
 ```
 
 ```bash
 docker run -d \
   --name app-diamilo \
   --restart unless-stopped \
-  -p 3001:80 \
-  app-diamilo
+  --env-file .env \
+  -v app-diamilo-data:/app/data \
+  -v /ruta/firebase-service-account.json:/run/secrets/firebase-service-account.json:ro \
+  -p 3001:8080 \
+  app-diamilo:latest
 ```
 
-Luego el reverse proxy local puede apuntar `dianimilo.tudominio.com` a
-`http://localhost:3001`.
+El dominio debe continuar apuntando a `http://localhost:3001`.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Conectar con App Hub
 
-Currently, two official plugins are available:
+Genera un token exclusivo para Diamilo:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+openssl rand -hex 32
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Configúralo como `DIAMILO_SECURITY_TOKEN` tanto en Diamilo como en el Hub. En el `.env` del Hub añade:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+DIAMILO_SECURITY_URL=https://diamilo.camiska.lat/api/internal/security
+DIAMILO_SECURITY_TOKEN=el-mismo-token
 ```
+
+## Administrar bloqueos
+
+```bash
+docker exec app-diamilo node server.mjs --list-locks
+docker exec app-diamilo node server.mjs --unlock-ip 192.0.2.10
+docker exec app-diamilo node server.mjs --unlock-all
+```
+
+## Desarrollo
+
+```bash
+npm install
+npm run build
+```
+
+`npm run dev` sirve únicamente el frontend. Para probar el login completo utiliza el contenedor o ejecuta `npm start` con las variables y credenciales de Firebase configuradas.

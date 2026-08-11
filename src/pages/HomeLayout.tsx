@@ -38,7 +38,10 @@ export default function HomeLayout() {
     user?.displayName || nameFromEmail(user?.email) || "Usuario";
 
   async function logout() {
-    await signOut(auth);
+    await Promise.allSettled([
+      signOut(auth),
+      fetch("/api/logout", { method: "POST", credentials: "same-origin" }),
+    ]);
     nav("/login", { replace: true });
   }
 

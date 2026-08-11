@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "firebase/auth";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, missingFirebaseConfig } from "../lib/firebase";
 
 type AuthCtx = {
@@ -17,7 +17,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (missingFirebaseConfig.length > 0) return;
 
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (u) {
+        try {
+          const response = await fetch("/api/session/touch", {
+            method: "POST",
+            credentials: "same-origin",
+          });
+          if (response.status === 401) {
+            await signOut(auth);
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // Conserva el acceso offline; se validará al recuperar conexión.
+        }
+      }
       setUser(u ?? null);
       setLoading(false);
     });

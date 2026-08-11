@@ -27,9 +27,20 @@ ENV VITE_TMDB_API_KEY=$VITE_TMDB_API_KEY
 
 RUN npm run build
 
-FROM nginx:1.27-alpine
+FROM node:20-alpine AS runtime
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /app
+ENV NODE_ENV=production \
+    PORT=8080 \
+    DIAMILO_DATA_DIR=/app/data \
+    GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/firebase-service-account.json
 
-EXPOSE 80
+COPY package*.json ./
+RUN npm ci --omit=dev
+RUN mkdir -p /app/data && chown node:node /app/data
+COPY --chown=node:node server.mjs ./server.mjs
+COPY --chown=node:node --from=build /app/dist ./dist
+
+USER node
+EXPOSE 8080
+CMD ["node", "server.mjs"]

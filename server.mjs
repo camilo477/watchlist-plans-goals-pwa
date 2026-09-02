@@ -168,6 +168,13 @@ async function firebasePasswordLogin(email, password) {
   );
   const data = await response.json();
   if (response.ok) return { uid: data.localId, email: data.email || email };
+  const firebaseError = String(data?.error?.message || "UNKNOWN_FIREBASE_ERROR")
+    .replace(/[^A-Z0-9_:\-. ]/gi, "")
+    .slice(0, 160);
+  console.warn("Firebase Auth rechazó el inicio de sesión", {
+    status: response.status,
+    error: firebaseError,
+  });
   if (response.status === 400 || response.status === 429) return null;
   throw new Error(`Firebase Auth respondió ${response.status}`);
 }

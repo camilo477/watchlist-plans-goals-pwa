@@ -2,6 +2,13 @@
 
 PWA compartida para películas, planes, metas y recuerdos, con React, Firebase y un servidor de autenticación propio.
 
+## Nuestro inicio
+
+- La portada muestra a Diana y Camilo con dos gatitos y el tiempo que llevan juntos.
+- El contador parte del **9 de enero de 2026 a las 00:01 de Colombia** (`2026-01-09T00:01:00-05:00`), definido en `src/lib/relationship.ts`.
+- Cada actualización calcula la diferencia con el reloj del dispositivo. No depende de un contador guardado, del tiempo que lleva abierta la página ni de que la Raspberry permanezca encendida. Al volver a la pestaña se actualiza inmediatamente.
+- Zanahoria tiene necesidades por hora: pierde 2 puntos de saciedad y 1 de energía, limpieza y felicidad. Una ausencia larga acumula como máximo 48 horas de desgaste; su edad conserva todo el tiempo transcurrido. El buen cuidado también recupera salud gradualmente.
+
 ## Seguridad
 
 - Las credenciales se validan contra Firebase desde el servidor.
@@ -81,6 +88,8 @@ docker exec app-diamilo node server.mjs --unlock-all
 
 ```bash
 npm install
+npm test
+npm run lint
 npm run build
 ```
 

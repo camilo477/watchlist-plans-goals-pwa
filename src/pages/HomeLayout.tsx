@@ -3,6 +3,7 @@ import { signOut } from "firebase/auth";
 import { useAuth } from "../auth/AuthProvider";
 import { auth } from "../lib/firebase";
 import { nameFromEmail } from "../lib/userNames";
+import AppIcon, { type AppIconName } from "../components/AppIcon";
 
 const topLinkStyle = (active: boolean): React.CSSProperties => ({
   padding: "10px 14px",
@@ -20,14 +21,18 @@ const topLinkStyle = (active: boolean): React.CSSProperties => ({
   whiteSpace: "nowrap",
   transform: active ? "translateY(2px) rotate(-.5deg)" : "rotate(.4deg)",
   fontWeight: 900,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 7,
 });
 
-const navItems = [
-  { to: "/watchlist", label: "Peliculas", short: "Pelis", icon: "*" },
-  { to: "/planes", label: "Planes", short: "Planes", icon: "+" },
-  { to: "/metas", label: "Metas", short: "Metas", icon: "v" },
-  { to: "/ruleta", label: "Ruleta", short: "Ruleta", icon: "?" },
-  { to: "/tamagotchi", label: "Tamagotchi", short: "Tama", icon: "o" },
+const navItems: { to: string; label: string; short: string; icon: AppIconName }[] = [
+  { to: "/", label: "Nosotros", short: "Inicio", icon: "heart" },
+  { to: "/watchlist", label: "Películas", short: "Pelis", icon: "film" },
+  { to: "/planes", label: "Planes", short: "Planes", icon: "plans" },
+  { to: "/metas", label: "Metas", short: "Metas", icon: "goals" },
+  { to: "/ruleta", label: "Ruleta", short: "Ruleta", icon: "shuffle" },
+  { to: "/tamagotchi", label: "Zanahoria", short: "Zana", icon: "cat" },
 ];
 
 export default function HomeLayout() {
@@ -45,7 +50,7 @@ export default function HomeLayout() {
     nav("/login", { replace: true });
   }
 
-  const is = (p: string) => pathname.startsWith(p);
+  const is = (p: string) => p === "/" ? pathname === "/" : pathname.startsWith(p);
 
   return (
     <div
@@ -118,6 +123,7 @@ export default function HomeLayout() {
         }
 
         .brand{
+          text-decoration: none;
           font-weight: 900;
           letter-spacing: 0;
           line-height: 1;
@@ -200,23 +206,23 @@ export default function HomeLayout() {
 
         .bottomNav{
           position: fixed;
-          left: 10px;
-          right: 10px;
+          left: 8px;
+          right: 8px;
           bottom: max(12px, env(safe-area-inset-bottom));
           z-index: 60;
           max-width: 720px;
           margin: 0 auto;
-          padding: 8px 10px;
+          padding: 6px;
           background: rgba(255,248,232,.94);
-          border: 3px solid var(--app-border-strong);
+          border: 2px solid var(--app-border-strong);
           border-radius: 20px;
           box-shadow: 0 8px 0 rgba(91,63,50,.12), 0 16px 30px rgba(91,63,50,.18);
         }
 
         .bottomNavInner{
           display:grid;
-          grid-template-columns: repeat(5, minmax(0,1fr));
-          gap: 8px;
+          grid-template-columns: repeat(6, minmax(0,1fr));
+          gap: 2px;
           max-width: 700px;
           margin: 0 auto;
         }
@@ -228,22 +234,23 @@ export default function HomeLayout() {
           justify-content:center;
           gap: 5px;
           text-decoration:none;
-          border-radius: 16px;
-          padding: 9px 4px;
-          border: 2px solid rgba(102,66,45,.22);
+          border-radius: 12px;
+          padding: 8px 2px;
+          min-height: 58px;
+          border: 1px solid transparent;
           color: var(--app-muted);
           font-size: 11px;
           line-height: 1;
           min-width: 0;
-          background: rgba(247,223,185,.62);
+          background: transparent;
           font-weight: 900;
         }
 
         .bItemActive{
-          background: #fff8e8;
-          border-color: var(--app-border-strong);
+          background: #eee0c7;
+          border-color: #cfb899;
           color: var(--app-ink);
-          transform: translateY(-2px) rotate(-1deg);
+          transform: translateY(-1px);
         }
 
         .bIcon{
@@ -252,8 +259,7 @@ export default function HomeLayout() {
           border-radius: 10px;
           display:grid;
           place-items:center;
-          background: #f6c35f;
-          border: 2px solid rgba(85,54,38,.38);
+          background: transparent;
           color: var(--app-ink);
           font-size: 13px;
           font-weight: 900;
@@ -334,24 +340,32 @@ export default function HomeLayout() {
             border-radius: 18px;
           }
           .memoryBook::before{ left: 14px; }
-          .brand span:last-child{ display: none; }
+          .brand{ font-size: 14px; }
           .sessionBox{ gap: 7px; }
           .sessionName{
-            max-width: min(42vw, 170px);
+            max-width: min(23vw, 140px);
             padding: 8px 9px;
             font-size: 12px;
           }
           .logoutBtn{ padding: 8px 10px; }
         }
+
+        @media (max-width: 359px){
+          .brandMark{ width: 28px; height: 28px; border-radius: 10px; }
+          .brand{ gap: 6px; font-size: 12px; }
+          .sessionBox{ gap: 5px; }
+          .sessionName{ max-width: 65px; padding: 7px; }
+          .logoutBtn{ padding: 8px; font-size: 12px; }
+        }
       `}</style>
 
       <header className="topbar">
         <div className="topbarInner">
-          <div className="brand">
+          <Link to="/" className="brand" aria-label="DianiMilo: ir al inicio">
             <span className="brandMark">DM</span>
             <span>DianiMilo</span>
-          </div>
-          <div className="sessionBox" aria-label="Sesion actual">
+          </Link>
+          <div className="sessionBox" aria-label="Sesión actual">
             <div className="sessionName" title={displayName}>
               {displayName}
             </div>
@@ -361,9 +375,10 @@ export default function HomeLayout() {
           </div>
         </div>
 
-        <nav className="topNav">
+        <nav className="topNav" aria-label="Navegación principal">
           {navItems.map((item) => (
-            <Link key={item.to} to={item.to} style={topLinkStyle(is(item.to))}>
+            <Link key={item.to} to={item.to} style={topLinkStyle(is(item.to))} aria-current={is(item.to) ? "page" : undefined}>
+              <AppIcon name={item.icon} size={17} />
               {item.label}
             </Link>
           ))}
@@ -371,27 +386,29 @@ export default function HomeLayout() {
       </header>
 
       <main className="main">
-        <section className="memoryBook" aria-label="Album compartido">
+        <section className="memoryBook" aria-label="Álbum compartido">
           <span className="sticker stickerTape" aria-hidden="true" />
           <span className="sticker stickerDot" aria-hidden="true" />
           <Outlet />
         </section>
       </main>
 
-      <div className="bottomNav">
+      <nav className="bottomNav" aria-label="Navegación principal móvil">
         <div className="bottomNavInner">
           {navItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
               className={`bItem ${is(item.to) ? "bItemActive" : ""}`}
+              aria-label={item.label}
+              aria-current={is(item.to) ? "page" : undefined}
             >
-              <span className="bIcon">{item.icon}</span>
+              <span className="bIcon"><AppIcon name={item.icon} size={21} /></span>
               {item.short}
             </Link>
           ))}
         </div>
-      </div>
+      </nav>
     </div>
   );
 }

@@ -27,7 +27,7 @@
   --app-ink: #321f18;
   --app-danger: #a83f3f;
   --app-radius: 14px;
-  --app-shadow: 0 12px 0 rgba(92, 61, 38, 0.12), 0 22px 42px rgba(91, 63, 50, 0.14);
+  --app-shadow: 0 7px 0 rgba(92, 61, 38, 0.08), 0 18px 36px rgba(91, 63, 50, 0.09);
 }
 
 * {
@@ -107,4 +107,9 @@ button:focus-visible,
 a:focus-visible {
   outline: 2px solid rgba(242, 143, 112, 0.72);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+  button:not(:disabled):hover { transform: none; }
 }

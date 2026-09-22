@@ -10,7 +10,7 @@ export default function LoginPage() {
   const { user, loading: authLoading } = useAuth();
 
   const from = useMemo(
-    () => loc?.state?.from || "/watchlist",
+    () => loc?.state?.from || "/",
     [loc?.state?.from]
   );
 

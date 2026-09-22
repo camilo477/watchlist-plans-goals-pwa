@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { doc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
 import { useAuth } from "../auth/AuthProvider";
 import { db } from "../lib/firebase";
+import { applyPetDecay, createDefaultPetStats, normalizePetStats, type PetStats } from "../lib/petStats";
 
 type AppState = "MENU" | "ACTION";
 type ActionType = "MUSIC" | "SLEEP" | "EAT" | "BATH" | "SICK";
@@ -12,16 +13,6 @@ type IconType =
   | "ZZZICON"
   | "WATERICON"
   | "NOTE";
-
-type PetStats = {
-  hunger: number;
-  energy: number;
-  hygiene: number;
-  health: number;
-  happiness: number;
-  ageTicks: number;
-  lastTickMs: number;
-};
 
 const clampi = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
@@ -44,7 +35,6 @@ const TH_HYGIENE = 25;
 const TH_HAPPY = 40;
 
 const PET_DOC_ID = "shared";
-const PET_TICK_MS = 5 * 60 * 1000;
 const PET_SAVE_DEBOUNCE_MS = 700;
 
 const ICON_FRAME_MS = 350;
@@ -98,22 +88,6 @@ const PET_MESSAGES = [
   "Te adoro",
 ];
 
-function createDefaultPetStats(now = Date.now()): PetStats {
-  return {
-    hunger: 100,
-    energy: 100,
-    hygiene: 100,
-    health: 100,
-    happiness: 100,
-    ageTicks: 0,
-    lastTickMs: now,
-  };
-}
-
-function readNumber(value: unknown, fallback: number) {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
-
 function getErrorMessage(error: unknown) {
   if (error && typeof error === "object") {
     const { code, message } = error as { code?: unknown; message?: unknown };
@@ -122,79 +96,6 @@ function getErrorMessage(error: unknown) {
   }
 
   return error instanceof Error ? error.message : String(error);
-}
-
-function normalizePetStats(value: unknown): PetStats {
-  const data =
-    value && typeof value === "object" ? (value as Partial<PetStats>) : {};
-  const fallback = createDefaultPetStats();
-
-  return {
-    hunger: clampi(
-      Math.round(readNumber(data.hunger, fallback.hunger)),
-      0,
-      100,
-    ),
-    energy: clampi(
-      Math.round(readNumber(data.energy, fallback.energy)),
-      0,
-      100,
-    ),
-    hygiene: clampi(
-      Math.round(readNumber(data.hygiene, fallback.hygiene)),
-      0,
-      100,
-    ),
-    health: clampi(
-      Math.round(readNumber(data.health, fallback.health)),
-      0,
-      100,
-    ),
-    happiness: clampi(
-      Math.round(readNumber(data.happiness, fallback.happiness)),
-      0,
-      100,
-    ),
-    ageTicks: Math.max(0, Math.round(readNumber(data.ageTicks, 0))),
-    lastTickMs: readNumber(data.lastTickMs, fallback.lastTickMs),
-  };
-}
-
-function applyPetDecay(p: PetStats, now = Date.now()) {
-  let changed = false;
-
-  while (now - p.lastTickMs >= PET_TICK_MS) {
-    p.lastTickMs += PET_TICK_MS;
-    p.ageTicks++;
-    changed = true;
-
-    p.hunger = clampi(p.hunger - 5, 0, 100);
-    p.energy = clampi(p.energy - 3, 0, 100);
-    p.hygiene = clampi(p.hygiene - 4, 0, 100);
-    p.happiness = clampi(p.happiness - 3, 0, 100);
-
-    const careScore = (p.hunger + p.energy + p.hygiene + p.happiness) / 4;
-    let healthLoss = 0;
-
-    if (careScore <= 75) healthLoss = 1;
-    if (careScore <= 60) healthLoss = 2;
-    if (careScore <= 45) healthLoss = 3;
-    if (careScore <= 30) healthLoss = 4;
-
-    if (p.hunger <= 20) healthLoss += 1;
-    if (p.hygiene <= 20) healthLoss += 1;
-    if (p.energy <= 15) healthLoss += 1;
-
-    if (healthLoss > 0) {
-      p.health = clampi(p.health - healthLoss, 0, 100);
-    }
-
-    if (p.hunger <= 25) p.happiness = clampi(p.happiness - 2, 0, 100);
-    if (p.energy <= 20) p.happiness = clampi(p.happiness - 2, 0, 100);
-    if (p.health <= 30) p.happiness = clampi(p.happiness - 3, 0, 100);
-  }
-
-  return changed;
 }
 
 function assetUrl(fileName: string) {
@@ -380,12 +281,13 @@ function useAudio() {
 
 function useElementWidth<T extends HTMLElement>(
   ref: React.RefObject<T | null>,
+  ready: boolean,
 ) {
   const [w, setW] = useState<number>(0);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!ready || !el) return;
 
     const ro = new ResizeObserver(() => {
       const rect = el.getBoundingClientRect();
@@ -396,7 +298,7 @@ function useElementWidth<T extends HTMLElement>(
     setW(el.getBoundingClientRect().width);
 
     return () => ro.disconnect();
-  }, [ref]);
+  }, [ref, ready]);
 
   return w;
 }
@@ -409,7 +311,7 @@ export default function TamagotchiPage() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lcdWrapRef = useRef<HTMLDivElement | null>(null);
-  const wrapW = useElementWidth(lcdWrapRef);
+  const wrapW = useElementWidth(lcdWrapRef, Boolean(assets));
 
   const petX = 2;
   const petY = 48 - PET_H - 1;
@@ -456,7 +358,7 @@ export default function TamagotchiPage() {
 
   // Escala SIEMPRE entera y que quepa (para evitar blur)
   const { cssW, cssH } = useMemo(() => {
-    const padding = 20; // incluye padding del wrapper + borde del canvas
+    const padding = 30; // 12px de padding y 3px de borde a cada lado
     const available = Math.max(0, wrapW - padding);
 
     // escala entera para que no se vea borroso
@@ -709,16 +611,17 @@ export default function TamagotchiPage() {
       const p = petRef.current;
 
       if (applyPetDecay(p, now)) {
-        const m = msgRef.current;
-        if (!m.visible && !hasAlert() && Math.random() * 100 < MSG_CHANCE_PCT) {
-          m.idx = Math.floor(Math.random() * PET_MESSAGES.length);
-          m.visible = true;
-          m.untilMs = performance.now() + MSG_DURATION_MS;
-          setMessageText(PET_MESSAGES[m.idx] ?? "");
-        }
         scheduleSavePet();
       }
 
+      // Sweet messages keep their own rhythm, independent of hourly needs.
+      const m = msgRef.current;
+      if (!m.visible && !hasAlert() && Math.random() * 100 < MSG_CHANCE_PCT) {
+        m.idx = Math.floor(Math.random() * PET_MESSAGES.length);
+        m.visible = true;
+        m.untilMs = performance.now() + MSG_DURATION_MS;
+        setMessageText(PET_MESSAGES[m.idx] ?? "");
+      }
       refreshHud();
     }, 60 * 1000);
 
@@ -870,7 +773,7 @@ export default function TamagotchiPage() {
   const lcdScale = cssW ? cssW / LCD_W : 1;
   const messageLeft = Math.round((ICON_W + 1) * lcdScale);
   const messageTop = Math.round(1 * lcdScale);
-  const messageWidth = 300;
+  const messageWidth = Math.min(300, Math.max(0, cssW - messageLeft - 8));
   const messageHeight = Math.round(18 * lcdScale);
 
   if (error) {
@@ -940,7 +843,7 @@ export default function TamagotchiPage() {
         color: disabled ? "var(--app-dim)" : "var(--app-ink)",
         borderRadius: 16,
         padding: "14px 16px",
-        minWidth: 86,
+        minWidth: 0,
         fontWeight: 800,
         letterSpacing: 0,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -993,6 +896,8 @@ export default function TamagotchiPage() {
     <div
       style={{
         padding: 0,
+        width: "100%",
+        minWidth: 0,
         display: "grid",
         placeItems: "center",
         color: "var(--app-text)",
@@ -1002,8 +907,9 @@ export default function TamagotchiPage() {
       <div
         style={{
           width: "min(920px, 100%)",
+          minWidth: 0,
           display: "grid",
-          gridTemplateColumns: "1fr",
+          gridTemplateColumns: "minmax(0, 1fr)",
           gap: 12,
           padding: "4px 0",
         }}
@@ -1011,12 +917,14 @@ export default function TamagotchiPage() {
         <div
           style={{
             position: "relative",
+            minWidth: 0,
             background:
               "linear-gradient(180deg, rgba(255,248,232,.96), rgba(247,223,185,.9))",
-            padding: 16,
+            padding: "clamp(10px, 2vw, 16px)",
             borderRadius: 24,
             boxShadow: "var(--app-shadow)",
             display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr)",
             gap: 12,
             border: "3px solid var(--app-border-strong)",
             overflow: "hidden",
@@ -1040,10 +948,10 @@ export default function TamagotchiPage() {
             aria-hidden="true"
             style={{
               position: "absolute",
-              right: 18,
+              right: 10,
               top: 16,
-              width: 38,
-              height: 38,
+              width: 26,
+              height: 26,
               borderRadius: "50%",
               background:
                 "radial-gradient(circle at 37% 38%, var(--app-ink) 0 3px, transparent 4px), radial-gradient(circle at 63% 38%, var(--app-ink) 0 3px, transparent 4px), radial-gradient(circle at 50% 56%, var(--app-ink) 0 2px, transparent 3px), #f6b6ad",
@@ -1063,6 +971,10 @@ export default function TamagotchiPage() {
           >
             Zanahoria
           </div>
+          <p style={{ textAlign: "center", margin: 0, color: "var(--app-muted)", fontSize: 13, lineHeight: 1.6 }}>
+            Un poquito de comida, música y mucho cariño.
+            <br />Nuestra gatita disfruta la vida sin afán.
+          </p>
 
           {/* HUD */}
           <div
@@ -1074,11 +986,11 @@ export default function TamagotchiPage() {
               padding: "2px 0 6px",
             }}
           >
-            <StatPill k="Hunger" v={hud.hunger} />
-            <StatPill k="Energy" v={hud.energy} />
-            <StatPill k="Hygiene" v={hud.hygiene} />
-            <StatPill k="Health" v={hud.health} />
-            <StatPill k="Happy" v={hud.happiness} />
+            <StatPill k="Saciedad" v={hud.hunger} />
+            <StatPill k="Energía" v={hud.energy} />
+            <StatPill k="Limpieza" v={hud.hygiene} />
+            <StatPill k="Salud" v={hud.health} />
+            <StatPill k="Felicidad" v={hud.happiness} />
           </div>
 
           {syncError || syncMessage ? (
@@ -1114,18 +1026,21 @@ export default function TamagotchiPage() {
               borderRadius: 20,
               border: "3px solid var(--app-border-strong)",
               width: "100%",
+              minWidth: 0,
               boxSizing: "border-box",
               boxShadow: "inset 0 4px 0 rgba(91,63,50,.12)",
             }}
           >
             <div
-              style={{ width: "100%", display: "grid", placeItems: "center" }}
+              style={{ width: "100%", minWidth: 0, display: "flex", justifyContent: "center" }}
             >
               <div
                 style={{
                   width: cssW ? `${cssW}px` : "100%",
                   maxWidth: "100%",
+                  minWidth: 0,
                   display: "grid",
+                  gridTemplateColumns: "minmax(0, 1fr)",
                   placeItems: "center",
                   position: "relative",
                 }}
@@ -1188,31 +1103,31 @@ export default function TamagotchiPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
               gap: 10,
             }}
           >
             <Btn
               label="◀"
-              sub="Left"
+              sub="Anterior"
               onPress={pressLeft}
               disabled={appState !== "MENU"}
             />
             <Btn
               label="▶"
-              sub="Right"
+              sub="Siguiente"
               onPress={pressRight}
               disabled={appState !== "MENU"}
             />
             <Btn
               label="A"
-              sub="Select"
+              sub="Elegir"
               onPress={pressA}
               disabled={appState !== "MENU"}
             />
             <Btn
               label="B"
-              sub="Back"
+              sub="Volver"
               onPress={pressB}
               disabled={appState === "MENU"}
             />

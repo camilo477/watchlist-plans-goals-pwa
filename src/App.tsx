@@ -9,6 +9,7 @@ import RoulettePage from "./pages/RoulettePage";
 import RequireAuth from "./auth/RequireAuth";
 import { AuthProvider } from "./auth/AuthProvider";
 import TamagotchiPage from "./pages/TamagotchiPage";
+import HomePage from "./pages/HomePage";
 
 export default function App() {
   return (
@@ -18,7 +19,7 @@ export default function App() {
 
         <Route element={<RequireAuth />}>
           <Route path="/" element={<HomeLayout />}>
-            <Route index element={<Navigate to="/watchlist" replace />} />
+            <Route index element={<HomePage />} />
             <Route path="watchlist" element={<WatchlistPage />} />
             <Route path="planes" element={<PlansPage />} />
             <Route path="metas" element={<GoalsPage />} />

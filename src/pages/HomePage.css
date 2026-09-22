@@ -1,0 +1,142 @@
+.togetherPage {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 8px 16px 0;
+}
+
+.togetherHero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(20px, 4vw, 56px);
+  padding: 12px 6px 34px;
+}
+
+.togetherEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #805344;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.togetherIntro h1 {
+  margin: 22px 0 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 4.3vw, 59px);
+  font-weight: 400;
+  letter-spacing: -.055em;
+  line-height: 1.12;
+  color: var(--app-ink);
+}
+
+.togetherIntro h1 em { color: #aa5b46; font-weight: 400; }
+.togetherIntro > p { font-size: 16px; line-height: 1.75; color: var(--app-muted); }
+.togetherSignature { display: flex; align-items: center; gap: 12px; margin-top: 26px; font-size: 13px; font-weight: 800; color: #805344; }
+.togetherSignature span { width: 23px; height: 1px; background: #bb9680; }
+
+.togetherPortrait {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  justify-self: center;
+  margin: 5px 0 0;
+  padding: 12px 15px 20px;
+  background: #fffaf0;
+  border: 1px solid #d3b798;
+  border-radius: 5px;
+  transform: rotate(2deg);
+  box-shadow: 3px 6px 0 #bda08226, 0 12px 26px #644a3210;
+}
+
+.portraitTape { position: absolute; z-index: 1; width: 102px; height: 28px; top: -13px; left: calc(50% - 51px); background: #aec8bdbb; border: 1px solid #88a79955; transform: rotate(-7deg); }
+.coupleCats { display: block; width: 100%; height: auto; }
+.togetherPortrait figcaption { text-align: center; font-family: Georgia, serif; font-style: italic; font-size: clamp(14px, 1.6vw, 18px); color: #795841; margin-top: 2px; }
+.portraitHeart { position: absolute; bottom: 10px; right: 14px; font-size: 32px; color: #b46d5a; transform: rotate(-14deg); }
+.catsHeart { transform-box: fill-box; transform-origin: center; animation: cats-heart 3.8s ease-in-out infinite; }
+@keyframes cats-heart { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-5px) rotate(5deg); } }
+
+.togetherCounter {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 32px;
+  border: 2px solid #b9a081;
+  border-radius: 20px;
+  background: #f4e7ca;
+  box-shadow: 0 5px 0 #68513712;
+}
+
+.counterMain { min-width: 0; }
+.counterMain h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 13px; font-weight: 800; color: #6d563b; }
+.counterPulse { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: #71916a; box-shadow: 0 0 0 4px #71916a16; }
+.counterTotal { font-size: clamp(30px, 4.6vw, 56px); font-weight: 800; letter-spacing: -.055em; font-variant-numeric: tabular-nums; line-height: 1.15; color: #4e3a29; white-space: nowrap; }
+.counterMain > p { margin: 8px 0 0; font-size: 13px; color: #766046; }
+.counterMain > p span { color: #af6756; font-size: 18px; }
+.counterDetails { padding-left: 26px; border-left: 1px dashed #b9a081; min-width: 0; }
+.counterParts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 0; }
+.counterParts > div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.counterParts dt { order: 2; font-size: 10px; color: #766046; }
+.counterParts dd { margin: 0; color: #59432f; font-size: clamp(19px, 2.4vw, 27px); font-weight: 800; font-variant-numeric: tabular-nums; }
+.counterSince { margin: 16px 0 0; text-align: center; color: #766046; font-size: 11px; line-height: 1.7; }
+
+.togetherChapters { margin-top: 34px; }
+.chaptersHeading { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+.chaptersHeading h2 { font-family: Georgia, serif; font-size: 20px; font-weight: 400; margin: 0; }
+.chaptersHeading > span { font-size: 23px; color: #aa7762; }
+.chapterGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.chapterLink { display: flex; gap: 12px; align-items: center; min-height: 86px; min-width: 0; padding: 15px 13px; border: 1px solid #c9b49b; border-radius: 14px; text-decoration: none; background: #fffbf2; box-shadow: 0 3px 0 #6851370c; transition: transform 180ms, box-shadow 180ms; }
+.chapterLink:hover { transform: translateY(-3px); box-shadow: 0 6px 0 #6851370c; }
+.chapterIcon { display: grid; place-items: center; width: 39px; height: 39px; flex-shrink: 0; border-radius: 12px; color: #775340; background: #f2d4b7; }
+.chapter-mint .chapterIcon { background: #d9e3cb; color: #52664f; }
+.chapter-yellow .chapterIcon { background: #f5e1aa; color: #806131; }
+.chapter-pink .chapterIcon { background: #efdbd2; color: #986053; }
+.chapterCopy { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.chapterCopy strong { font-size: 12px; line-height: 1.4; }
+.chapterCopy > span { font-size: 10px; color: #806752; line-height: 1.5; }
+.chapterArrow { margin-left: auto; color: #9e8165; flex-shrink: 0; }
+.togetherFootnote { margin: 28px 0 8px; text-align: center; font-family: Georgia, serif; font-size: 13px; font-style: italic; color: #987962; }
+
+@media (max-width: 1000px) {
+  .chapterGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chapterLink:last-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 700px) {
+  .togetherPage { padding: 6px 3px 0; }
+  .togetherHero { grid-template-columns: 1fr; gap: 26px; padding: 4px 4px 28px; text-align: center; }
+  .togetherIntro h1 { font-size: clamp(36px, 7.7vw, 52px); margin: 16px 0 12px; }
+  .togetherIntro > p { font-size: 14px; margin: 0; }
+  .togetherSignature { justify-content: center; margin-top: 16px; }
+  .togetherEyebrow { font-size: 10px; }
+  .togetherPortrait { width: 86%; max-width: 335px; padding: 9px 10px 18px; }
+  .portraitHeart { font-size: 27px; right: 8px; bottom: 6px; }
+  .togetherCounter { grid-template-columns: 1fr; gap: 20px; padding: 22px 16px; text-align: center; }
+  .counterMain h2 { justify-content: center; }
+  .counterTotal { font-size: clamp(28px, 8.3vw, 52px); }
+  .counterDetails { padding: 18px 0 0; border-left: 0; border-top: 1px dashed #b9a081; }
+  .counterParts { max-width: 330px; margin: 0 auto; }
+  .counterParts dd { font-size: 25px; }
+  .counterSince { margin-top: 14px; }
+  .chaptersHeading h2 { font-size: 18px; line-height: 1.4; }
+  .chapterLink { padding: 13px 10px; gap: 9px; }
+  .chapterArrow { display: none; }
+}
+
+@media (max-width: 430px) {
+  .chapterGrid { grid-template-columns: 1fr; gap: 9px; }
+  .chapterLink { min-height: 72px; padding: 12px 14px; }
+  .chapterArrow { display: block; }
+  .chapterCopy strong { font-size: 13px; }
+  .chapterCopy > span { font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catsHeart { animation: none; }
+  .chapterLink { transition: none; }
+  .chapterLink:hover { transform: none; }
+}

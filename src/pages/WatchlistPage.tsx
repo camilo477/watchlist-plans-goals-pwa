@@ -717,7 +717,7 @@ export default function WatchlistPage() {
 
                 <p
                   className="wlWrapAnywhere"
-                  style={{ margin: 0, color: "#cbd5e1", lineHeight: 1.4 }}
+                  style={{ margin: 0, color: "var(--app-text)", lineHeight: 1.4 }}
                 >
                   {details.overview || "Sin sinopsis disponible."}
                 </p>

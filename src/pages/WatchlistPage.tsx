@@ -49,6 +49,9 @@ type WatchItem = {
 const img = (path?: string | null) =>
   path ? `https://image.tmdb.org/t/p/w342${path}` : null;
 
+const normalizeSearch = (text: string) =>
+  text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 export default function WatchlistPage() {
   const { user, loading: authLoading } = useAuth();
 
@@ -70,6 +73,7 @@ export default function WatchlistPage() {
 
   // ---------- Firestore ----------
   const [items, setItems] = useState<WatchItem[]>([]);
+  const [pendingSearch, setPendingSearch] = useState("");
 
   useEffect(() => {
     if (authLoading) return;
@@ -224,6 +228,13 @@ export default function WatchlistPage() {
     () => items.filter((i) => i.status === "pending"),
     [items]
   );
+  const pendingQuery = normalizeSearch(pendingSearch.trim());
+  const filteredPending = useMemo(
+    () => pending.filter((item) =>
+      normalizeSearch(item.title).includes(pendingQuery)
+    ),
+    [pending, pendingQuery]
+  );
   const watching = useMemo(
     () => items.filter((i) => i.status === "watching"),
     [items]
@@ -343,16 +354,33 @@ export default function WatchlistPage() {
         <section className="area-pending wlCardScroll" style={card}>
           <header style={cardHeader}>
             <strong>Pendientes</strong>
-            <span style={{ color: "#94a3b8", fontSize: 12 }}>
-              {pending.length}
+            <span
+              style={{ color: "#94a3b8", fontSize: 12 }}
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {pendingQuery
+                ? `${filteredPending.length} de ${pending.length}`
+                : pending.length}
             </span>
           </header>
 
+          <input
+            type="search"
+            aria-label="Buscar en pendientes"
+            placeholder="Buscar en pendientes…"
+            value={pendingSearch}
+            onChange={(e) => setPendingSearch(e.target.value)}
+            style={{ ...input, marginBottom: 12 }}
+          />
+
           {pending.length === 0 ? (
             <div style={emptyBox}>No hay pendientes.</div>
+          ) : filteredPending.length === 0 ? (
+            <div style={emptyBox}>No hay pendientes que coincidan con la búsqueda.</div>
           ) : (
             <div style={{ display: "grid", gap: 10 }}>
-              {pending.map((it) => (
+              {filteredPending.map((it) => (
                 <ItemRow
                   key={it.id}
                   it={it}

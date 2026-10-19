@@ -47,6 +47,7 @@ export default function PlansPage() {
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Create form
   const [title, setTitle] = useState("");
@@ -82,8 +83,11 @@ export default function PlansPage() {
   const grouped = useMemo(() => {
     const map: Record<PlanStatus, Plan[]> = { idea: [], planned: [], done: [] };
     for (const p of plans) map[p.status].push(p);
+    if (sortOrder === "desc") {
+      for (const col of STATUS) map[col.key].reverse();
+    }
     return map;
-  }, [plans]);
+  }, [plans, sortOrder]);
 
   async function createPlan() {
     const t = title.trim();
@@ -215,6 +219,22 @@ export default function PlansPage() {
 
       <header className="headerRow">
         <h2 style={{ margin: 0 }}>Planes</h2>
+        <button
+          type="button"
+          style={smallBtn}
+          onClick={() =>
+            setSortOrder((current) => current === "asc" ? "desc" : "asc")
+          }
+          aria-label={
+            sortOrder === "asc"
+              ? "Mostrar planes más recientes primero"
+              : "Mostrar planes más antiguos primero"
+          }
+          title="Cambiar el orden de los planes"
+        >
+          <span aria-hidden="true">{sortOrder === "asc" ? "↓" : "↑"}</span>{" "}
+          {sortOrder === "asc" ? "Más antiguos primero" : "Más recientes primero"}
+        </button>
       </header>
 
       {/* Create */}

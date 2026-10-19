@@ -343,6 +343,27 @@ export default function WatchlistPage() {
     -webkit-box-orient: vertical;
     overflow:hidden;
   }
+
+  .wlSearchInput::placeholder{
+    color: var(--app-muted);
+    opacity: 1;
+  }
+  .wlSearchInput:focus{
+    outline: 2px solid var(--app-accent);
+    outline-offset: 2px;
+  }
+  .wlSearchButton{
+    background: #ffd66f;
+    color: var(--app-ink);
+  }
+  .wlSearchButton:not(:disabled):hover{
+    background: #ffcd52;
+  }
+  .wlSearchButton:disabled{
+    background: var(--app-paper-2);
+    color: var(--app-muted);
+    cursor: not-allowed;
+  }
 `}</style>
 
       <div>
@@ -355,7 +376,7 @@ export default function WatchlistPage() {
           <header style={cardHeader}>
             <strong>Pendientes</strong>
             <span
-              style={{ color: "#94a3b8", fontSize: 12 }}
+              style={{ color: "var(--app-muted)", fontSize: 12 }}
               aria-live="polite"
               aria-atomic="true"
             >
@@ -367,6 +388,7 @@ export default function WatchlistPage() {
 
           <input
             type="search"
+            className="wlSearchInput"
             aria-label="Buscar en pendientes"
             placeholder="Buscar en pendientes…"
             value={pendingSearch}
@@ -457,11 +479,13 @@ export default function WatchlistPage() {
           <section className="wlRightCard" style={card}>
             <header style={cardHeader}>
               <strong>Buscar Película o Serie</strong>
-              <span style={{ color: "#94a3b8", fontSize: 12 }}>TMDB</span>
+              <span style={{ color: "var(--app-muted)", fontSize: 12 }}>TMDB</span>
             </header>
 
             <form onSubmit={onSearch} style={{ display: "grid", gap: 10 }}>
               <input
+                className="wlSearchInput"
+                aria-label="Buscar película o serie"
                 value={qText}
                 onChange={(e) => setQText(e.target.value)}
                 placeholder="Buscar"
@@ -469,6 +493,7 @@ export default function WatchlistPage() {
               />
               <button
                 type="submit"
+                className="wlSearchButton"
                 style={primaryBtn}
                 disabled={!qText.trim() || searchLoading}
               >
@@ -533,7 +558,7 @@ export default function WatchlistPage() {
                         >
                           {titleOf(r)}
                         </span>
-                        <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                        <span style={{ fontSize: 12, color: "var(--app-muted)" }}>
                           {(mediaType === "movie" ? "Película" : "Serie") +
                             (yearOf(r) ? ` • ${yearOf(r)}` : "")}
                         </span>
@@ -817,21 +842,20 @@ const cardHeader: React.CSSProperties = {
 const input: React.CSSProperties = {
   width: "100%",
   padding: "10px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--app-border-strong)",
-  background: "rgba(16,17,15,.6)",
-  color: "var(--app-text)",
-  outline: "none",
+  borderRadius: 12,
+  border: "2px solid var(--app-border-strong)",
+  background: "var(--app-paper)",
+  color: "var(--app-ink)",
+  caretColor: "var(--app-ink)",
+  colorScheme: "light",
   fontSize: 16,
   boxSizing: "border-box",
 };
 
 const primaryBtn: React.CSSProperties = {
   padding: "10px 12px",
-  borderRadius: 8,
-  border: "1px solid rgba(125,211,176,.34)",
-  background: "rgba(125,211,176,.16)",
-  color: "var(--app-text)",
+  borderRadius: 12,
+  border: "2px solid var(--app-border-strong)",
   cursor: "pointer",
   minHeight: 40,
   fontWeight: 800,

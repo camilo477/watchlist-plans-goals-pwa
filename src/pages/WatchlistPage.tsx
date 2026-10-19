@@ -21,6 +21,7 @@ import {
 } from "../lib/tmdb";
 import { useAuth } from "../auth/AuthProvider";
 import { nameFromEmail } from "../lib/userNames";
+import MobileSectionNav from "../components/MobileSectionNav";
 
 type Status = "pending" | "watching" | "done";
 
@@ -290,10 +291,10 @@ export default function WatchlistPage() {
   }
 
   /* límites cómodos por sección (sin obligar a ocupar 40vh vacíos) */
-  .rightStack > section:first-child{
+  .wlSearchCard{
     max-height: 56dvh; /* Buscar */
   }
-  .rightStack > section:last-child{
+  .wlDetailsCard{
     max-height: 38dvh; /* Detalles */
   }
 
@@ -370,11 +371,26 @@ export default function WatchlistPage() {
         <h2 style={{ margin: 0, letterSpacing: 0 }}>Watchlist</h2>
       </div>
 
+      <MobileSectionNav
+        label="Ir a una sección de watchlist"
+        sections={[
+          { id: "watchlist-pending", label: "Pendientes", count: pending.length },
+          { id: "watchlist-watching", label: "Viendo", count: watching.length },
+          { id: "watchlist-done", label: "Vistas", count: done.length },
+        ]}
+      />
+
       <div className="wlGrid">
         {/* 1) Pendientes */}
-        <section className="area-pending wlCardScroll" style={card}>
+        <section
+          id="watchlist-pending"
+          className="area-pending wlCardScroll mobileSectionTarget"
+          aria-labelledby="watchlist-pending-title"
+          tabIndex={-1}
+          style={card}
+        >
           <header style={cardHeader}>
-            <strong>Pendientes</strong>
+            <strong id="watchlist-pending-title">Pendientes</strong>
             <span
               style={{ color: "var(--app-muted)", fontSize: 12 }}
               aria-live="polite"
@@ -418,9 +434,15 @@ export default function WatchlistPage() {
         </section>
 
         {/* 2) Viendo */}
-        <section className="area-watching wlCardScroll" style={card}>
+        <section
+          id="watchlist-watching"
+          className="area-watching wlCardScroll mobileSectionTarget"
+          aria-labelledby="watchlist-watching-title"
+          tabIndex={-1}
+          style={card}
+        >
           <header style={cardHeader}>
-            <strong>Viendo</strong>
+            <strong id="watchlist-watching-title">Viendo</strong>
             <span style={{ color: "#94a3b8", fontSize: 12 }}>
               {watching.length}
             </span>
@@ -446,9 +468,15 @@ export default function WatchlistPage() {
         </section>
 
         {/* 3) Vistas */}
-        <section className="area-done wlCardScroll" style={card}>
+        <section
+          id="watchlist-done"
+          className="area-done wlCardScroll mobileSectionTarget"
+          aria-labelledby="watchlist-done-title"
+          tabIndex={-1}
+          style={card}
+        >
           <header style={cardHeader}>
-            <strong>Vistas</strong>
+            <strong id="watchlist-done-title">Vistas</strong>
             <span style={{ color: "#94a3b8", fontSize: 12 }}>
               {done.length}
             </span>
@@ -476,7 +504,7 @@ export default function WatchlistPage() {
         {/* Panel derecho */}
         <div className="area-right rightStack">
           {/* Buscar */}
-          <section className="wlRightCard" style={card}>
+          <section className="wlRightCard wlSearchCard" style={card}>
             <header style={cardHeader}>
               <strong>Buscar Película o Serie</strong>
               <span style={{ color: "var(--app-muted)", fontSize: 12 }}>TMDB</span>
@@ -585,17 +613,14 @@ export default function WatchlistPage() {
           </section>
 
           {/* Detalles */}
-          <section className="wlRightCard" style={card}>
+          {selected && (
+          <section className="wlRightCard wlDetailsCard" style={card}>
             <header style={cardHeader}>
               <strong>Detalles</strong>
               <span style={{ color: "#94a3b8", fontSize: 12 }}></span>
             </header>
 
-            {!selected ? (
-              <div style={emptyBox}>
-                Haz click en un pendiente o en un resultado para ver detalles.
-              </div>
-            ) : detailsLoading ? (
+            {detailsLoading ? (
               <div style={emptyBox}>Cargando detalles…</div>
             ) : detailsError ? (
               <div style={errorBox}>{detailsError}</div>
@@ -701,6 +726,7 @@ export default function WatchlistPage() {
               <div style={emptyBox}>Sin detalles.</div>
             )}
           </section>
+          )}
         </div>
       </div>
     </div>

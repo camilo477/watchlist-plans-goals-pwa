@@ -13,6 +13,7 @@ import {
 import { db } from "../lib/firebase";
 import { useAuth } from "../auth/AuthProvider";
 import { nameFromEmail } from "../lib/userNames";
+import MobileSectionNav from "../components/MobileSectionNav";
 
 type PlanStatus = "idea" | "planned" | "done";
 
@@ -237,6 +238,15 @@ export default function PlansPage() {
         </button>
       </header>
 
+      <MobileSectionNav
+        label="Ir a una sección de planes"
+        sections={STATUS.map((status) => ({
+          id: `plans-${status.key}`,
+          label: status.label,
+          count: grouped[status.key].length,
+        }))}
+      />
+
       {/* Create */}
       <section style={card}>
         <div style={{ display: "grid", gap: 10 }}>
@@ -280,7 +290,15 @@ export default function PlansPage() {
       {/* Board */}
       <section className="board">
         {STATUS.map((col) => (
-          <div key={col.key} style={column}>
+          <div
+            key={col.key}
+            id={`plans-${col.key}`}
+            className="mobileSectionTarget"
+            role="region"
+            aria-labelledby={`plans-${col.key}-title`}
+            tabIndex={-1}
+            style={column}
+          >
             <div
               style={{
                 display: "flex",
@@ -288,7 +306,7 @@ export default function PlansPage() {
                 gap: 10,
               }}
             >
-              <h3 style={{ margin: 0 }}>{col.label}</h3>
+              <h3 id={`plans-${col.key}-title`} style={{ margin: 0 }}>{col.label}</h3>
               <span style={{ color: "var(--app-muted)", fontSize: 12, fontWeight: 900 }}>
                 {grouped[col.key].length}
               </span>

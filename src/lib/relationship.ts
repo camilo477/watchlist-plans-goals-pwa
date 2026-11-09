@@ -3,10 +3,10 @@
 export const RELATIONSHIP_START = "2026-01-09T00:01:00-05:00";
 export const RELATIONSHIP_START_MS = Date.parse(RELATIONSHIP_START);
 
-export function timeTogether(now = Date.now()) {
+export function timeTogether(now = Date.now(), startMs = RELATIONSHIP_START_MS) {
   const totalSeconds = Math.max(
     0,
-    Math.floor((now - RELATIONSHIP_START_MS) / 1000),
+    Math.floor((now - startMs) / 1000),
   );
 
   return {

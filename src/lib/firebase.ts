@@ -5,6 +5,8 @@ import type { FirebaseApp } from "firebase/app";
 import type { Auth } from "firebase/auth";
 import type { Firestore } from "firebase/firestore";
 
+import { isDemoMode } from "./demo";
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -18,7 +20,7 @@ export const missingFirebaseConfig = Object.entries(firebaseConfig)
   .filter(([, value]) => !value)
   .map(([key]) => `VITE_FIREBASE_${key.replace(/[A-Z]/g, (m) => `_${m}`).toUpperCase()}`);
 
-const hasFirebaseConfig = missingFirebaseConfig.length === 0;
+const hasFirebaseConfig = !isDemoMode && missingFirebaseConfig.length === 0;
 
 export const app = hasFirebaseConfig
   ? initializeApp(firebaseConfig)

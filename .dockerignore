@@ -10,3 +10,5 @@ dist-ssr
 service-account*.json
 firebase-admin*.json
 diamilo-firebase-adminsdk-*.json
+
+dist-demo

@@ -32,3 +32,6 @@ dist-ssr
 service-account*.json
 firebase-admin*.json
 diamilo-firebase-adminsdk-*.json
+
+# Standalone portfolio demo
+dist-demo

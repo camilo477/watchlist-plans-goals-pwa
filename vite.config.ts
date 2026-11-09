@@ -6,6 +6,7 @@ const repo = "watchlist-plans-goals-pwa";
 
 function normalizeBasePath(value: string) {
   if (!value || value === "/") return "/";
+  if (value === "." || value === "./") return "./";
   const withLeadingSlash = value.startsWith("/") ? value : `/${value}`;
   return withLeadingSlash.endsWith("/") ? withLeadingSlash : `${withLeadingSlash}/`;
 }
@@ -13,12 +14,14 @@ function normalizeBasePath(value: string) {
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const basePath = normalizeBasePath(
-    env.VITE_BASE_PATH || (command === "build" ? `/${repo}/` : "/"),
+    env.VITE_BASE_PATH || (mode === "demo" ? "./" : command === "build" ? `/${repo}/` : "/"),
   );
 
   return {
     base: basePath,
+    define: { "import.meta.env.VITE_DEMO_ONLY": JSON.stringify(mode === "demo" ? "true" : "false") },
     build: {
+      outDir: mode === "demo" ? "dist-demo" : "dist",
       rollupOptions: {
         output: {
           manualChunks: {

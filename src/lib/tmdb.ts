@@ -1,3 +1,6 @@
+import { isDemoMode } from "./demo";
+import { demoMovies } from "./demoStore";
+
 const TMDB_BASE = "https://api.themoviedb.org/3";
 
 export type TmdbMediaType = "movie" | "tv";
@@ -54,6 +57,7 @@ async function tmdbFetch<T>(path: string, params?: Record<string, string>) {
 }
 
 export async function searchMulti(query: string) {
+  if (isDemoMode) return { results: demoMovies.filter(movie => titleOf(movie).toLocaleLowerCase().includes(query.toLocaleLowerCase())) };
   return tmdbFetch<{ results: TmdbSearchItem[] }>("/search/multi", {
     query,
     include_adult: "false",
@@ -61,6 +65,11 @@ export async function searchMulti(query: string) {
 }
 
 export async function getDetails(mediaType: TmdbMediaType, id: number) {
+  if (isDemoMode) {
+    const movie = demoMovies.find(movie => movie.id === id && movie.media_type === mediaType);
+    if (!movie) throw new Error("Este título no está en el catálogo de ejemplo.");
+    return { ...movie, genres: [{ id: 1, name: "Aventuras" }], vote_average: 8, runtime: 105, number_of_seasons: 2, number_of_episodes: 16 };
+  }
   return tmdbFetch<TmdbDetails>(`/${mediaType}/${id}`);
 }
 

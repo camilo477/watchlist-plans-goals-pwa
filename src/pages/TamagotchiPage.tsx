@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { doc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, onSnapshot, serverTimestamp, setDoc } from "../lib/data";
 import { useAuth } from "../auth/AuthProvider";
 import { db } from "../lib/firebase";
 import { applyPetDecay, createDefaultPetStats, normalizePetStats, type PetStats } from "../lib/petStats";
@@ -74,7 +74,7 @@ const PET_MESSAGES = [
   "Estas bonita",
   "Linda",
   "La mejor",
-  "Dianita",
+  "Sonrisas",
   "tuyo",
   "Soy tu bebe",
   "Mimos",

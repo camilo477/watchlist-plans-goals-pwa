@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { signInWithCustomToken } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useAuth } from "../auth/AuthProvider";
+import { demoUrl } from "../lib/demo";
+import { missingFirebaseConfig } from "../lib/firebase";
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -129,6 +131,8 @@ export default function LoginPage() {
           transform: rotate(-4deg);
         }
 
+        .demoEntry{display:block;margin-top:18px;padding:12px;text-align:center;border:2px solid var(--app-border-strong);border-radius:14px;color:var(--app-ink);background:var(--app-surface);font-weight:800;text-decoration:none;}
+        .demoHelp{font-size:13px;line-height:1.5;color:var(--app-muted);margin-bottom:0;}
         @media (max-height: 520px){
           .loginWrap{
             align-items: flex-start;
@@ -142,7 +146,7 @@ export default function LoginPage() {
       <div className="loginCard">
         <h2 style={{ margin: 0 }}>Iniciar sesión</h2>
         <p style={{ color: "var(--app-muted)", marginTop: 6 }}>
-          Usuario: <b>camilo</b>, <b>diana</b> o tu correo
+          Películas, planes y metas en un espacio compartido.
         </p>
 
         <form onSubmit={onLogin} style={{ display: "grid", gap: 10 }}>
@@ -165,7 +169,7 @@ export default function LoginPage() {
             disabled={loading || authLoading}
           />
 
-          <button disabled={loading || authLoading} style={btn} type="submit">
+          <button disabled={loading || authLoading || missingFirebaseConfig.length > 0} style={btn} type="submit">
             {authLoading ? "Cargando…" : loading ? "Entrando…" : "Entrar"}
           </button>
 
@@ -175,6 +179,9 @@ export default function LoginPage() {
             </div>
           ) : null}
         </form>
+        {missingFirebaseConfig.length > 0 && <p>El acceso privado no está disponible aquí. Puedes explorar la demostración.</p>}
+        <a className="demoEntry" href={demoUrl()}>Explorar demo</a>
+        <p className="demoHelp">Conoce todas las funciones con datos de ejemplo. No necesitas crear una cuenta.</p>
       </div>
     </div>
   );

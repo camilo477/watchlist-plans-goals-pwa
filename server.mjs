@@ -18,10 +18,12 @@ const lockDurationMs = Number(process.env.DIAMILO_AUTH_BLOCK_MS || 15 * 60 * 100
 const maxAttempts = Number(process.env.DIAMILO_AUTH_MAX_ATTEMPTS || 5);
 const maxEvents = 200;
 
-const aliases = {
-  camilo: "camilo_vito@yahoo.es",
-  diana: "dianaquiroga03@hotmail.com",
-};
+// Optional aliases belong to the deployment configuration, not public source.
+const aliasConfig = JSON.parse(process.env.DIAMILO_LOGIN_ALIASES || "{}");
+if (!aliasConfig || Array.isArray(aliasConfig) || typeof aliasConfig !== "object" || Object.values(aliasConfig).some(value => typeof value !== "string" || !value.includes("@"))) {
+  throw new Error("DIAMILO_LOGIN_ALIASES debe ser un objeto JSON de alias a correos.");
+}
+const aliases = new Map(Object.entries(aliasConfig).map(([alias, email]) => [alias.trim().toLowerCase(), email.trim().toLowerCase()]));
 
 mkdirSync(dataDir, { recursive: true });
 
@@ -153,7 +155,7 @@ function authenticate(request, updateActivity = true) {
 function resolveEmail(value) {
   const normalized = String(value).trim().toLowerCase();
   if (normalized.includes("@")) return normalized;
-  return aliases[normalized] || "";
+  return aliases.get(normalized) || "";
 }
 
 async function firebasePasswordLogin(email, password) {

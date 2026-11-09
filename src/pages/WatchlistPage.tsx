@@ -8,7 +8,7 @@ import {
   query,
   serverTimestamp,
   updateDoc,
-} from "firebase/firestore";
+} from "../lib/data";
 import { db } from "../lib/firebase";
 import {
   getDetails,

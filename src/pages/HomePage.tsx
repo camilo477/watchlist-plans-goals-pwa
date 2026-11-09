@@ -4,6 +4,9 @@ import AppIcon, { type AppIconName } from "../components/AppIcon";
 import CoupleCats from "../components/CoupleCats";
 import { RELATIONSHIP_START, timeTogether } from "../lib/relationship";
 import "./HomePage.css";
+import { isDemoMode, demoAnniversary } from "../lib/demo";
+const anniversary = isDemoMode ? demoAnniversary : RELATIONSHIP_START;
+const elapsedTogether = () => timeTogether(Date.now(), Date.parse(anniversary));
 
 const numberFormat = new Intl.NumberFormat("es-CO");
 
@@ -52,10 +55,10 @@ const chapters: {
 ];
 
 function TogetherCounter() {
-  const [elapsed, setElapsed] = useState(() => timeTogether());
+  const [elapsed, setElapsed] = useState(() => elapsedTogether());
 
   useEffect(() => {
-    const refresh = () => setElapsed(timeTogether());
+    const refresh = () => setElapsed(elapsedTogether());
     const interval = window.setInterval(refresh, 1000);
     // Mobile browsers suspend timers in the background. Read the actual clock
     // immediately on return, including back/forward cache restores.
@@ -113,7 +116,7 @@ function TogetherCounter() {
           ))}
         </dl>
         <p className="counterSince">
-          Desde el <time dateTime={RELATIONSHIP_START}>9 de enero de 2026</time>
+          Desde el <time dateTime={anniversary}>{new Intl.DateTimeFormat("es-CO", { dateStyle: "long", timeZone: "America/Bogota" }).format(new Date(anniversary))}</time>
         </p>
       </div>
     </section>
@@ -131,7 +134,7 @@ export default function HomePage() {
             <em>la mejor pareja.</em>
           </h1>
           <div className="togetherSignature">
-            <span /> Diana &amp; Camilo <span />
+            <span /> {isDemoMode ? "Alex & Sam" : (import.meta.env.VITE_COUPLE_NAMES || "Nuestro espacio compartido")} <span />
           </div>
         </div>
         <figure className="togetherPortrait">

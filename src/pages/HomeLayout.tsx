@@ -2,6 +2,8 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { useAuth } from "../auth/AuthProvider";
 import { auth } from "../lib/firebase";
+import { demoUrl, isDemoMode, isDemoOnly } from "../lib/demo";
+import { resetDemo } from "../lib/data";
 import { nameFromEmail } from "../lib/userNames";
 import AppIcon, { type AppIconName } from "../components/AppIcon";
 
@@ -43,6 +45,7 @@ export default function HomeLayout() {
     user?.displayName || nameFromEmail(user?.email) || "Usuario";
 
   async function logout() {
+    if (isDemoMode) { window.location.assign(demoUrl(isDemoOnly)); return; }
     await Promise.allSettled([
       signOut(auth),
       fetch("/api/logout", { method: "POST", credentials: "same-origin" }),
@@ -63,6 +66,8 @@ export default function HomeLayout() {
       }}
     >
       <style>{`
+        .demoBanner{position:relative;z-index:2;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;padding:12px 18px;background:#dbece6;color:var(--app-ink);font-size:13px;}
+        .demoBanner button{border:2px solid var(--app-border);border-radius:10px;background:var(--app-paper);color:inherit;padding:7px 10px;cursor:pointer;font-weight:800;}
         .memoryShell{
           position: relative;
           overflow: hidden;
@@ -370,7 +375,7 @@ export default function HomeLayout() {
               {displayName}
             </div>
             <button onClick={logout} className="logoutBtn">
-              Salir
+              {isDemoOnly ? "Inicio" : "Salir"}
             </button>
           </div>
         </div>
@@ -385,6 +390,10 @@ export default function HomeLayout() {
         </nav>
       </header>
 
+      {isDemoMode && <aside className="demoBanner" aria-label="Demostración">
+        <span><strong>Demo interactiva</strong> · Alex y Sam son perfiles ficticios. Tus cambios se guardan solo en esta pestaña.</span>
+        <button type="button" onClick={() => { resetDemo(); window.location.reload(); }}>Restablecer ejemplo</button>
+      </aside>}
       <main className="main">
         <section className="memoryBook" aria-label="Álbum compartido">
           <span className="sticker stickerTape" aria-hidden="true" />

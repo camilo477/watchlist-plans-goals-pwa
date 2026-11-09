@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query } from "../lib/data";
 import { useNavigate } from "react-router-dom";
 import { db } from "../lib/firebase";
 

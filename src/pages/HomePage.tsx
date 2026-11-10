@@ -126,14 +126,16 @@ function TogetherCounter() {
 export default function HomePage() {
   return (
     <div className="togetherPage">
-      <section className="togetherHero" aria-labelledby="together-heading">
+      <section className="togetherHero" aria-labelledby={isDemoMode ? "together-signature" : "together-heading"}>
         <div className="togetherIntro">
-          <h1 id="together-heading">
-            DianiMilo,
-            <br />
-            <em>la mejor pareja.</em>
-          </h1>
-          <div className="togetherSignature">
+          {!isDemoMode && (
+            <h1 id="together-heading">
+              DianiMilo,
+              <br />
+              <em>la mejor pareja.</em>
+            </h1>
+          )}
+          <div id="together-signature" className="togetherSignature">
             <span /> {isDemoMode ? "Alex & Sam" : (import.meta.env.VITE_COUPLE_NAMES || "Nuestro espacio compartido")} <span />
           </div>
         </div>

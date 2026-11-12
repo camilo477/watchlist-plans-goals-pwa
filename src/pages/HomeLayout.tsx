@@ -37,6 +37,8 @@ const navItems: { to: string; label: string; short: string; icon: AppIconName }[
   { to: "/tamagotchi", label: "Zanahoria", short: "Zana", icon: "cat" },
 ];
 
+const appName = isDemoMode ? "Nuestro espacio" : "DianiMilo";
+
 export default function HomeLayout() {
   const { pathname } = useLocation();
   const nav = useNavigate();
@@ -366,9 +368,9 @@ export default function HomeLayout() {
 
       <header className="topbar">
         <div className="topbarInner">
-          <Link to="/" className="brand" aria-label="DianiMilo: ir al inicio">
-            <span className="brandMark">DM</span>
-            <span>DianiMilo</span>
+          <Link to="/" className="brand" aria-label={`${appName}: ir al inicio`}>
+            <span className="brandMark">{isDemoMode ? "♡" : "DM"}</span>
+            <span>{appName}</span>
           </Link>
           <div className="sessionBox" aria-label="Sesión actual">
             <div className="sessionName" title={displayName}>

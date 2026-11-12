@@ -13,6 +13,7 @@ function normalizeBasePath(value: string) {
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const appName = mode === "demo" ? "Nuestro espacio" : "DianiMilo";
   const basePath = normalizeBasePath(
     env.VITE_BASE_PATH || (mode === "demo" ? "./" : command === "build" ? `/${repo}/` : "/"),
   );
@@ -33,12 +34,16 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       react(),
+      {
+        name: "app-title",
+        transformIndexHtml: (html) => html.replace(/<title>.*?<\/title>/, `<title>${appName}</title>`),
+      },
       VitePWA({
         registerType: "autoUpdate",
         scope: basePath,
         manifest: {
-          name: "DianiMilo",
-          short_name: "DianiMilo",
+          name: appName,
+          short_name: appName,
           description: "Nuestro espacio compartido para películas, planes, metas y recuerdos.",
           lang: "es-CO",
           start_url: basePath,
